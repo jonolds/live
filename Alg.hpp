@@ -3,6 +3,7 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/viz/types.hpp>
 #include <vector>
+#include <math.h>
 using namespace std;
 using namespace cv;
 using namespace viz;
@@ -17,8 +18,9 @@ private:
 	int houghThresh = 30;
 	double minLength = 30;
 	double maxGap = 20;
+	Point topLeftP, topMidLeftP, topMidRightP, topRightP, topMidP, leftSideP, rightSideP, botLeftP, botRightP;
 
-	double resizeFactor = .22, offsetFactor = .13;
+	double resizeFactor = .22, offsetFactor = .2;
 public:
 	Alg();
 	~Alg();
@@ -30,24 +32,39 @@ public:
 	void printFrameLineInfo(vector<Vec4i> blues, vector<Vec4i> reds, vector<Vec4i> blueFrameLines,
 		vector<Vec4i> redFrameLines,
 		Scalar bluesMean, Scalar redsMean, Scalar bluesStdDev, Scalar redsStdDev);
-	void setYoffset(int i);
 
-	void process(Mat& src, Mat& out), process2(Mat& src, Mat& out);
+	void process(Mat& src, Mat& out);
 	Mat applyCanny(Mat src_gray);
 	void applyHoughP(Mat& im_edge, Mat& out, vector<Vec4i>& lines);
-	void applyHough(Mat& im_edge, Mat& out, vector<Vec4i>& lines);
 	void sortLines(Mat& img, vector<Vec4i>& lines, vector<Vec4i>& blues, vector<Vec4i>& reds);
 	void combineLines(vector<Vec4i>& blues, vector<Vec4i>& reds, vector<Vec4i>& blueFrameLines, vector<Vec4i>& redFrameLines);
 	void drawLines(Mat& out, vector<Vec4i> blues, vector<Vec4i> reds);
 	void drawOrAndYel(Mat& out);
 	void drawBlueWarning(Mat& out);
-	
+
+	void drawMarks(Mat& out);
 };
 #endif
+void Alg::drawMarks(Mat& out) {
+	y_offset = int(offsetFactor * out.rows);
+	topLeftP = Point(65, y_offset), topMidLeftP = Point(125, y_offset), topMidRightP = Point(155, y_offset), topRightP = Point(210, y_offset);
+	botLeftP = Point(0, out.rows), botRightP = Point(281, out.rows);
+	leftSideP = Point(0, 85), rightSideP = Point(out.cols, 85);
 
+	circle(out, topLeftP, 3, Color::yellow(), -1, 8);
+	circle(out, topMidLeftP, 3, Color::yellow(), -1, 8);
+	circle(out, topMidRightP, 3, Color::yellow(), -1, 8);
+	circle(out, topRightP, 3, Color::yellow(), -1, 8);
+	circle(out, topMidP, 3, Color::yellow(), -1, 8);
+	circle(out, leftSideP, 3, Color::yellow(), -1, 8);
+	circle(out, rightSideP, 3, Color::yellow(), -1, 8);
+	circle(out, botLeftP, 3, Color::yellow(), -1, 8);
+	circle(out, botRightP, 3, Color::yellow(), -1, 8);
+}
 void Alg::process(Mat& src, Mat& out) {
 	vector<Vec4i> lines, blues, reds, blueFrameLines, redFrameLines;
 	setCanny(30, 105, false); setHough(15, 20, 70);
+	
 	Mat src_gray = initMats(src, out);
 
 	blur(src_gray, src_gray, Size(3, 3));
@@ -55,29 +72,17 @@ void Alg::process(Mat& src, Mat& out) {
 	GaussianBlur(src_gray, src_gray, Size(3, 3), 4);
 	
 	Mat edges = applyCanny(src_gray);
-	imshow("edges1", edges);
+	//imshow("edges1", edges);
 	applyHoughP(edges, out, lines);
 	sortLines(out, lines, blues, reds);
 
 	combineLines(blues, reds, blueFrameLines, redFrameLines);
 	drawLines(out, blues, reds);
-	//drawOrAndYel(out);
-	//drawBlueWarning(out);
-}
-void Alg::process2(Mat& src, Mat& out) {
-	vector<Vec4i> lines, blues, reds, blueFrameLines, redFrameLines;
-	setCanny(35, 120, false); setHough(25, 20, 65);
-	Mat src_gray = initMats(src, out);
+
+	drawMarks(out);
+	//upper points
 	
-	GaussianBlur(src_gray, src_gray, Size(5,5), 4);
-	//blur(src_gray, src_gray, Size(3, 3));
-	Mat edges = applyCanny(src_gray);
-	imshow("edges2", edges);
-	applyHoughP(edges, out, lines);
-	sortLines(out, lines, blues, reds);
-	
-	combineLines(blues, reds, blueFrameLines, redFrameLines);
-	drawLines(out, blues, reds);
+
 	//drawOrAndYel(out);
 	//drawBlueWarning(out);
 }
@@ -90,40 +95,34 @@ Mat Alg::applyCanny(Mat src_gray) {
 }
 void Alg::applyHoughP(Mat& im_edge, Mat& out, vector<Vec4i>& lines) {
 	lines.clear();
-	y_offset = int(offsetFactor * im_edge.rows);
+	
 	// Rect(x,y,w,h) w->width=cols;h->rows
-	Rect rect(0, int(y_offset), im_edge.cols, im_edge.rows - int(y_offset));
+	Rect rect(0, y_offset, im_edge.cols, im_edge.rows - y_offset);
 	Mat roi = im_edge(rect);
 	// 1st best {30, 20, 20} > {30,10,20}>{40, 20, 10} 
 	HoughLinesP(roi, lines, 1, 1 * CV_PI / 180, houghThresh, minLength, maxGap);
-	rectangle(out, rect, Color::pink(), 3, LINE_8, 0);
+	line(out, Point(0, y_offset), Point(out.size().width, y_offset), Color::pink(), 1, 8);
 }
-
-void Alg::applyHough(Mat& im_edge, Mat& out, vector<Vec4i>& lines) {
-
-}
-
 
 void Alg::sortLines(Mat& img, vector<Vec4i>& lines, vector<Vec4i>& blues, vector<Vec4i>& reds) {
 	Point maxBlue(0, img.size().height), maxRed(0, img.size().height);
 	for (size_t i = 0; i < lines.size(); i++) {
 		lines[i][1] += y_offset, lines[i][3] += y_offset;
 		int x1 = lines[i][0], y1 = lines[i][1], x2 = lines[i][2], y2 = lines[i][3];
-		double slope = x2 - x1 != 0 ? (tan(double(y2 - y1) / double(x2 - x1)) * 180) / CV_PI : 99.0;
-		while (slope > 360) //slope reference to origin at botton left/mathematical orignal
-			slope -= 360;
-		while (slope < -360)
-			slope += 360;
-		if (!(abs(abs(slope) - 45) > 20)) {
-			if (slope > 0) {
+		double slope = x2-x1 != 0 ? double(y2-y1)/double(x2-x1) : 99;
+		double angle = slope != 99 ? (atan(slope) * 180) / CV_PI : 99.0;
+		if ((abs(angle) > 20)&&(abs(angle) < 62)) {
+			if (angle > 0) {
 				reds.emplace_back(lines[i]);
 				if (y1 < maxRed.y || y2 < maxBlue.y)
 					maxRed = (y1 > y2) ? Point(x2, y2) : Point(x1, y1);
+				//cout << "red--  slope: " << slope << "    angle: " << angle << "\n";
 			}
 			else {
 				blues.emplace_back(lines[i]);
 				if (y1 < maxRed.y || y2 < maxBlue.y)
 					maxBlue = (y1 > y2) ? Point(x2, y2) : Point(x1, y1);
+				//cout << "blue-- slope: " << slope << "    angle: " << angle << "\n";
 			}
 		}
 	}
@@ -147,10 +146,16 @@ void Alg::combineLines(vector<Vec4i>& blues, vector<Vec4i>& reds, vector<Vec4i>&
 }
 
 void Alg::drawLines(Mat& out, vector<Vec4i> blues, vector<Vec4i> reds) {
-	for (size_t i = 0; i < blues.size(); i++)
-		line(out, Point(blues[i][0], blues[i][1]), Point(blues[i][2], blues[i][3]), Color::blue(), 2, 8);
-	for (size_t i = 0; i < reds.size(); i++)
+	Mat outClone = out.clone();
+	for (size_t i = 0; i < blues.size(); i++) {
+		int x1 = blues[i][0], y1 = blues[i][1], x2 = blues[i][2], y2 = blues[i][3];
+		line(out, Point(x1, y1), Point(x2, y2), Color::blue(), 2, 8);
+	}
+	for (size_t i = 0; i < reds.size(); i++) {
+		int x1 = reds[i][0], y1 = reds[i][1], x2 = reds[i][2], y2 = reds[i][3];
 		line(out, Point(reds[i][0], reds[i][1]), Point(reds[i][2], reds[i][3]), Color::red(), 2, 8);
+	}
+		
 }
 
 void Alg::drawOrAndYel(Mat& out) {
@@ -197,9 +202,6 @@ void Alg::printFrameLineInfo(vector<Vec4i> blues, vector<Vec4i> reds, vector<Vec
 }
 Alg::Alg() {}
 Alg::~Alg() { cvDestroyAllWindows();}
-void Alg::setYoffset(int i) {
-	y_offset = i;
-}
 void Alg::setCanny(double low, double high, bool l2g) {
 	lowThresh = low;
 	highThresh = high;
