@@ -1,7 +1,9 @@
 ﻿  live.cpp
+c:\stuff\robots\live\alg.hpp(142): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+c:\stuff\robots\live\alg.hpp(150): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
   Generating code
-  1 of 472 functions ( 0.2%) were compiled, the rest were copied from previous compilation.
+  3 of 466 functions ( 0.6%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
-    1 functions had inline decision re-evaluated but remain unchanged
+    4 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
   live.vcxproj -> C:\stuff\robots\x64\Release\live.exe

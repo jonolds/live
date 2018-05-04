@@ -37,11 +37,10 @@ public:
 	Mat applyCanny(Mat src_gray);
 	void applyHoughP(Mat& im_edge, Mat& out, vector<Vec4i>& lines);
 	void sortLines(Mat& img, vector<Vec4i>& lines, vector<Vec4i>& blues, vector<Vec4i>& reds);
-	void combineLines(vector<Vec4i>& blues, vector<Vec4i>& reds, vector<Vec4i>& blueFrameLines, vector<Vec4i>& redFrameLines);
 	void drawLines(Mat& out, vector<Vec4i> blues, vector<Vec4i> reds);
 	void drawOrAndYel(Mat& out);
 	void drawBlueWarning(Mat& out);
-
+	Vec4i blueAveLine, redAveLine;
 	void drawMarks(Mat& out);
 };
 #endif
@@ -62,6 +61,7 @@ void Alg::drawMarks(Mat& out) {
 	circle(out, botRightP, 3, Color::yellow(), -1, 8);
 }
 void Alg::process(Mat& src, Mat& out) {
+	blueAveLine = Vec4i(0, 0, 0, 0); redAveLine = Vec4i(0, 0, 0, 0);
 	vector<Vec4i> lines, blues, reds, blueFrameLines, redFrameLines;
 	setCanny(30, 105, false); setHough(15, 20, 70);
 	
@@ -72,17 +72,10 @@ void Alg::process(Mat& src, Mat& out) {
 	GaussianBlur(src_gray, src_gray, Size(3, 3), 4);
 	
 	Mat edges = applyCanny(src_gray);
-	//imshow("edges1", edges);
 	applyHoughP(edges, out, lines);
 	sortLines(out, lines, blues, reds);
-
-	combineLines(blues, reds, blueFrameLines, redFrameLines);
 	drawLines(out, blues, reds);
-
 	drawMarks(out);
-	//upper points
-	
-
 	//drawOrAndYel(out);
 	//drawBlueWarning(out);
 }
@@ -133,32 +126,35 @@ void Alg::sortLines(Mat& img, vector<Vec4i>& lines, vector<Vec4i>& blues, vector
 	farthestSlopeVec.insert(farthestSlopeVec.begin(), Vec4i(maxBlue.x, maxBlue.y, maxRed.x, maxRed.y));
 }
 
-void Alg::combineLines(vector<Vec4i>& blues, vector<Vec4i>& reds, vector<Vec4i>& blueFrameLines,
-	vector<Vec4i>& redFrameLines) {
-	Scalar bluesMean, bluesStdDev, redsMean, redsStdDev;
-	meanStdDev(blues, bluesMean, bluesStdDev, noArray());
-	meanStdDev(reds, redsMean, redsStdDev, noArray());
-
-	for (int i = 0; i < (Mat(blues)).rows; i++) //blues removal
-		if (!((abs(blues[i][0] - bluesMean[0]) > bluesStdDev[0]) || (abs(blues[i][2] - bluesMean[2]) > bluesStdDev[2])))
-			blueFrameLines.emplace_back(blues[i][0], blues[i][1], blues[i][2], blues[i][3]);
-	for (int i = 0; i < Mat(reds).rows; i++) //reds removal
-		if (!((abs(reds[i][0] - redsMean[0]) > redsStdDev[0]) || (abs(reds[i][2] - redsMean[2]) > redsStdDev[2])))
-			redFrameLines.emplace_back(reds[i][0], reds[i][1], reds[i][2], reds[i][3]);
-	blueCount += Mat(blueFrameLines).rows;
-	redCount += Mat(redFrameLines).rows;
-}
 
 void Alg::drawLines(Mat& out, vector<Vec4i> blues, vector<Vec4i> reds) {
 	for (size_t i = 0; i < blues.size(); i++) {
 		int x1 = blues[i][0], y1 = blues[i][1], x2 = blues[i][2], y2 = blues[i][3];
 		line(out, Point(x1, y1), Point(x2, y2), Color::blue(), 2, 8);
+		blueAveLine[0] += x1; blueAveLine[1] += y1; blueAveLine[2] += x2; blueAveLine[3] += y2;
 	}
 	for (size_t i = 0; i < reds.size(); i++) {
 		int x1 = reds[i][0], y1 = reds[i][1], x2 = reds[i][2], y2 = reds[i][3];
 		line(out, Point(x1, y1), Point(x2, y2), Color::red(), 2, 8);
+		redAveLine[0] += x1; redAveLine[1] += y1; redAveLine[2] += x2; redAveLine[3] += y2;
 	}
-		
+	if (blues.size() > 1) {
+		int i = blues.size();
+		blueAveLine /= i;
+		/*
+		blueAveLine[0] = int(blueAveLine[0] / i); blueAveLine[1] = int(blueAveLine[1] / i);
+		blueAveLine[2] = int(blueAveLine[2] / i); blueAveLine[3] = int(blueAveLine[3] / i); */
+		line(out, Point(blueAveLine[0], blueAveLine[1]), Point(blueAveLine[2], blueAveLine[3]), Color::green(), 2, 8);
+	}
+	if (reds.size() > 1) {
+		int i = reds.size();
+		redAveLine /= i;
+		/*
+		redAveLine[0] = int(redAveLine[0] / i); redAveLine[1] = int(redAveLine[1] / i);
+		redAveLine[2] = int(redAveLine[2] / i); redAveLine[3] = int(redAveLine[3] / i); */
+		line(out, Point(redAveLine[0], redAveLine[1]), Point(redAveLine[2], redAveLine[3]), Color::green(), 2, 8);
+	}
+	
 }
 
 void Alg::drawOrAndYel(Mat& out) {
