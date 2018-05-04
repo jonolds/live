@@ -113,16 +113,20 @@ void Alg::sortLines(Mat& img, vector<Vec4i>& lines, vector<Vec4i>& blues, vector
 		double angle = slope != 99 ? (atan(slope) * 180) / CV_PI : 99.0;
 		if ((abs(angle) > 20)&&(abs(angle) < 62)) {
 			if (angle > 0) {
-				reds.emplace_back(lines[i]);
-				if (y1 < maxRed.y || y2 < maxBlue.y)
-					maxRed = (y1 > y2) ? Point(x2, y2) : Point(x1, y1);
-				//cout << "red--  slope: " << slope << "    angle: " << angle << "\n";
+				if (x1 > topMidRightP.x && x2 > topMidRightP.x) {
+					reds.emplace_back(lines[i]);
+					if (y1 < maxRed.y || y2 < maxBlue.y)
+						maxRed = (y1 > y2) ? Point(x2, y2) : Point(x1, y1);
+				}
+				
 			}
 			else {
-				blues.emplace_back(lines[i]);
-				if (y1 < maxRed.y || y2 < maxBlue.y)
-					maxBlue = (y1 > y2) ? Point(x2, y2) : Point(x1, y1);
-				//cout << "blue-- slope: " << slope << "    angle: " << angle << "\n";
+				if (x1 < topMidLeftP.x && x2 < topMidLeftP.x) {
+					blues.emplace_back(lines[i]);
+					if (y1 < maxRed.y || y2 < maxBlue.y)
+						maxBlue = (y1 > y2) ? Point(x2, y2) : Point(x1, y1);
+				}
+				
 			}
 		}
 	}
@@ -146,20 +150,18 @@ void Alg::combineLines(vector<Vec4i>& blues, vector<Vec4i>& reds, vector<Vec4i>&
 }
 
 void Alg::drawLines(Mat& out, vector<Vec4i> blues, vector<Vec4i> reds) {
-	Mat outClone = out.clone();
 	for (size_t i = 0; i < blues.size(); i++) {
 		int x1 = blues[i][0], y1 = blues[i][1], x2 = blues[i][2], y2 = blues[i][3];
 		line(out, Point(x1, y1), Point(x2, y2), Color::blue(), 2, 8);
 	}
 	for (size_t i = 0; i < reds.size(); i++) {
 		int x1 = reds[i][0], y1 = reds[i][1], x2 = reds[i][2], y2 = reds[i][3];
-		line(out, Point(reds[i][0], reds[i][1]), Point(reds[i][2], reds[i][3]), Color::red(), 2, 8);
+		line(out, Point(x1, y1), Point(x2, y2), Color::red(), 2, 8);
 	}
 		
 }
 
 void Alg::drawOrAndYel(Mat& out) {
-	//cout << farthestSlopeVec[0][3] << "\n";
 	line(out, Point(farthestSlopeVec[0][0], farthestSlopeVec[0][1]), Point(farthestSlopeVec[0][2], farthestSlopeVec[0][3]),
 		Color::yellow(), 2, LINE_8, 0);
 	int num = 6;
