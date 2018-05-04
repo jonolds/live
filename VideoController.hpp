@@ -11,7 +11,7 @@ public:
 	VideoCapture vidreader;
 	VideoWriter writer;
 	Alg* algPtr1; Alg* algPtr2;
-	int fps = 20, frameCount = 0;
+	int fps = 25, frameCount = 0;
 	Size actualSize, reqSize;
 	string outWindowName, outVidName;
 	bool stop = false, save = false, isVidOpen = false, isWriterInitialized = false;
@@ -43,20 +43,22 @@ void VideoController::run() {
 	Mat currentFrame, outFrame1, outFrame2;
 	startWindowThread();
 	namedWindow(outWindowName, WINDOW_AUTOSIZE);
-//	namedWindow("outFrame2", WINDOW_AUTOSIZE);
 	setSize();
 	initWriter();
 	while (!stop) {
-		// read each frame in video	
 		if (!vidreader.read(currentFrame)) // read next frame
 			break;
 		int initialTime = int(getTickCount());
 		algPtr1->process(currentFrame, outFrame1);
-		//algPtr2->process2(currentFrame, outFrame2);
 		double frameProcessTime = ((double(getTickCount()) - initialTime) / getTickFrequency()) * 1000;
 		frProcTimeVec.push_back(frameProcessTime);
 		imshow(outWindowName, outFrame1);
-//		imshow("outFrame2", outFrame2);
+		if (save) {
+			Mat tmp(Size(1280, 720), outFrame1.type());
+			resize(outFrame1, tmp, Size(640, 480));
+			writer.write(tmp);
+		}
+			
 		int elaspedTime = int((getTickCount() - initialTime) / (1000 * getTickFrequency())); //from start of frame read
 		int remainingTime = (1000 / fps) - (elaspedTime); //used to prevent early play/process of next frame
 		frameCount++;
@@ -73,8 +75,9 @@ void VideoController::setVariables(string oVidName, string oWinName, bool sv, in
 void VideoController::initWriter() {
 	if(save){
 		writer.release(); // release any previous instance of writer object
-		int codec = static_cast<int>(vidreader.get(CAP_PROP_FOURCC));
-		writer.open(outVidName, codec, fps, actualSize, true);
+		int codec = CV_FOURCC('M', 'J', 'P', 'G');
+		//int codec = static_cast<int>(vidreader.get(CAP_PROP_FOURCC));
+		writer.open(outVidName, codec, fps, Size(1280, 720), true);
 		if (!writer.isOpened()) {
 			cout << " Error while calling the cv::VideoWriter.open(" << outVidName << ")" << endl;
 			writer.release();

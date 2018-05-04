@@ -128,14 +128,14 @@ void Alg::sortLines(Mat& img, vector<Vec4i>& lines, vector<Vec4i>& blues, vector
 
 
 void Alg::drawLines(Mat& out, vector<Vec4i> blues, vector<Vec4i> reds) {
-	for (size_t i = 0; i < blues.size(); i++) {
+	for (int i = 0; i < blues.size(); i++) {
 		int x1 = blues[i][0], y1 = blues[i][1], x2 = blues[i][2], y2 = blues[i][3];
-		line(out, Point(x1, y1), Point(x2, y2), Color::blue(), 2, 8);
+		//line(out, Point(x1, y1), Point(x2, y2), Color::blue(), 2, 8);
 		blueAveLine[0] += x1; blueAveLine[1] += y1; blueAveLine[2] += x2; blueAveLine[3] += y2;
 	}
-	for (size_t i = 0; i < reds.size(); i++) {
+	for (int i = 0; i < reds.size(); i++) {
 		int x1 = reds[i][0], y1 = reds[i][1], x2 = reds[i][2], y2 = reds[i][3];
-		line(out, Point(x1, y1), Point(x2, y2), Color::red(), 2, 8);
+		//line(out, Point(x1, y1), Point(x2, y2), Color::red(), 2, 8);
 		redAveLine[0] += x1; redAveLine[1] += y1; redAveLine[2] += x2; redAveLine[3] += y2;
 	}
 	if (blues.size() > 1) {
