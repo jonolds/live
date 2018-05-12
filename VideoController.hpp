@@ -21,11 +21,10 @@ public:
 	VideoController();
 	~VideoController();
 };
-#endif
 
 void VideoController::setupLive() {
-	algPtr1 = new Alg(); algPtr2 = new Alg();
-	setVariables("outVid.mp4", "live", false, 1280, 720);
+	algPtr1 = new Alg();
+	setVariables("outVid.mp4", "live", true, 1280, 720);
 	vidreader.release();
 	vidreader.open(0);
 	setSize();
@@ -45,7 +44,18 @@ void VideoController::run() {
 	namedWindow(outWindowName, WINDOW_AUTOSIZE);
 	setSize();
 	initWriter();
-	while (!stop) {
+	int count1 = 0, count = 0;
+	while (!stop) { //brightness 0-64, contrast 0-95 exposure -8 (-6) to 0
+		/*vidreader.set(CAP_PROP_EXPOSURE, vidreader.get(CAP_PROP_EXPOSURE)-1);
+		cout << "brightness: " << vidreader.get(CAP_PROP_BRIGHTNESS) << "\n";
+		cout << "contrast  : " << vidreader.get(CAP_PROP_CONTRAST) << "\n";
+		cout << "exposure  : " << vidreader.get(CAP_PROP_EXPOSURE) << "\n";
+		if(count1 >100) {
+			vidreader.set(CAP_PROP_CONTRAST, count);
+			count++;
+		}
+		count1++;
+		*/
 		if (!vidreader.read(currentFrame)) // read next frame
 			break;
 		int initialTime = int(getTickCount());
@@ -63,6 +73,8 @@ void VideoController::run() {
 		int remainingTime = (1000 / fps) - (elaspedTime); //used to prevent early play/process of next frame
 		frameCount++;
 		(remainingTime > 1) ? waitKey(remainingTime) : waitKey(1);
+		//waitKey();
+
 	}
 	endAndReleaseAll();
 }
@@ -107,3 +119,4 @@ VideoController::~VideoController() {
 	vidreader.release();
 	cvDestroyAllWindows();
 }
+#endif
