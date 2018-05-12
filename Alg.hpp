@@ -5,6 +5,7 @@
 #include <vector>
 #include <math.h>
 #include <iomanip>
+#include <numeric>
 #include "helper.hpp"
 using namespace std; using namespace cv; using namespace viz;
 class Alg {
@@ -61,54 +62,35 @@ void Alg::applyHoughP(Mat& edges, Mat& out, vector<Vec4i>& lines) {
 	line(out, Point(0, y_offset), Point(out.size().width, y_offset), Color::pink(), 1, 8);
 }
 void Alg::sortLines(Mat& img, vector<Vec4i>& lines, vector<Vec4i>& greens, vector<Vec4i>& reds) {
-	Point maxGreen(0, img.size().height), maxRed(0, img.size().height);
 	for (size_t i = 0; i < lines.size(); i++) {
 		int x1, y1, x2, y2;
 		double angle = getAngle(lines[i], x1, y1, x2, y2);
 		if ((abs(angle) > 20)&&(abs(angle) < 62)) {
-			if (angle > 0) {
-				if (x1 > topMidRightP.x && x2 > topMidRightP.x) {
+			if ((angle > 0)  &&  (x1 > topMidRightP.x)  &&  (x2 > topMidRightP.x))
 					reds.emplace_back(lines[i]);
-					if (y1 < maxRed.y || y2 < maxGreen.y)
-						maxRed = (y1 > y2) ? Point(x2, y2) : Point(x1, y1);
-				}
-			}
-			else {
-				if ((x1 & x2) < topMidLeftP.x && x2 < topMidLeftP.x) {
+			else if((angle < 0)  &&  (x1 < topMidLeftP.x)  &&  (x2 < topMidLeftP.x))
 					greens.emplace_back(lines[i]);
-					if (y1 < maxRed.y || y2 < maxGreen.y)
-						maxGreen = (y1 > y2) ? Point(x2, y2) : Point(x1, y1);
-				}
-			}
 		}
 	}
-	farSlopeVec.insert(farSlopeVec.begin(), Vec4i(maxGreen.x, maxGreen.y, maxRed.x, maxRed.y));
 }
 void Alg::drawLines(Mat& out, vector<Vec4i> greens, vector<Vec4i> reds) {
 	double gAngle, rAngle;
-	for (int i = 0; i < greens.size(); i++)
-		gAveLine[0] += greens[i][0], gAveLine[1] += greens[i][1], gAveLine[2] += greens[i][2], gAveLine[3] += greens[i][3];
-	for (int i = 0; i < reds.size(); i++)
-		rAveLine[0] += reds[i][0], rAveLine[1] += reds[i][1], rAveLine[2] += reds[i][2], rAveLine[3] += reds[i][3];
 	if (greens.size() > 0) {
-		gAveLine /= int(greens.size());
+		gAveLine = std::accumulate(greens.begin(), greens.end(), Vec4i(0, 0, 0, 0))/ int(greens.size());
 		line(out, Point(gAveLine[0], gAveLine[1]), Point(gAveLine[2], gAveLine[3]), Color::green(), 2, 8);
 		gAngle = getAngle(gAveLine);
 		boxWrite(out, decStr(gAngle), Point(10, 42));
 	}
 	if (reds.size() > 0) {
-		rAveLine /= int(reds.size());
+		rAveLine = std::accumulate(reds.begin(), reds.end(), Vec4i(0, 0, 0, 0)) / int(reds.size());
 		line(out, Point(rAveLine[0], rAveLine[1]), Point(rAveLine[2], rAveLine[3]), Color::red(), 2, 8);
 		rAngle = getAngle(rAveLine);
 		boxWrite(out, decStr(rAngle), Point(300, 42));
+		if(greens.size() > 0) //if both are > 0
+			angleSums.emplace_front(rAngle + gAngle);
 	}
-	if(reds.size() > 0 && greens.size() > 0)
-		angleSums.emplace_front(rAngle + gAngle);
 	if (angleSums.size() == 9) {
-		double angleAve = 0;
-		for(int i = 0; i < 9; i++)
-			angleAve += angleSums.at(i);
-		angleAve /= 9;
+		double angleAve = std::accumulate(angleSums.begin(), angleSums.end(), 0.0)/9;
 		boxWrite(out, decStr(angleAve), Point(170, 42));
 		angleSums.pop_back();
 		if (abs(angleAve) > 5) 
