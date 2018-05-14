@@ -1,13 +1,14 @@
 #include <opencv2/opencv.hpp>
 #include <fstream>
-#include "VideoController.hpp"
+#include "VidCont.hpp"
 
 using namespace std;
 using namespace cv;
 
 int main() {
-	VideoController vid;
-	vid.setupLive();
+	VidCont vid;
+	//vid.setupLive();
+	vid.setup("../media/test10.mp4");
 	vid.run();
 	return 0;
 }

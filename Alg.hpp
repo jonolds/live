@@ -16,7 +16,8 @@ public:
 	int y_offset, frameCountAlg = 0, houghThresh = 30, minAngle, maxAngle;
 	double lowThresh = 50, highThresh = 150, minLength = 30, maxGap = 20, resizeFactor = .35, offsetFactor = .2;
 	bool l2gradient = false, test = false;
-	Point topLeftP, topMidLeftP, topMidRightP, topRightP, topMidP, leftSideP, rightSideP, botLeftP, botRightP; 
+	Point topLeftP, topMidLeftP, topMidRightP, topRightP, topMidP, leftSideP, rightSideP, botLeftP, botRightP;
+	Point gTopPt, gBotPt, rTopPt, rBotPt;
 	Alg() {}; ~Alg() { cvDestroyAllWindows(); }
 	Mat initMats(Mat src, Mat&  out), applyCanny(Mat src_gray);
 	void process(Mat& src, Mat& out), applyHoughP(Mat& im_edge, Mat& out, vector<Vec4i>& lines);
@@ -38,7 +39,6 @@ void Alg::process(Mat& src, Mat& out) {
 	
 	sortLines(out, lines, greens, reds);
 	drawLines(out, greens, reds);
-	cout << out.size << "\n";
 	drawMarks(out);
 }
 Mat Alg::applyCanny(Mat src_gray) {
@@ -74,20 +74,46 @@ void Alg::sortLines(Mat& img, vector<Vec4i>& lines, vector<Vec4i>& greens, vecto
 	}
 }
 void Alg::drawLines(Mat& out, vector<Vec4i> greens, vector<Vec4i> reds) {
-	double gAngle, rAngle;
 	if (greens.size() > 0) {
 		gAveLine = std::accumulate(greens.begin(), greens.end(), Vec4i(0, 0, 0, 0))/ int(greens.size());
-		line(out, Point(gAveLine[0], gAveLine[1]), Point(gAveLine[2], gAveLine[3]), Color::green(), 2, 8);
-		gAngle = getAngle(gAveLine);
-		boxWrite(out, decStr(gAngle), Point(10, 42));
+		line(out, Point(gAveLine[0], gAveLine[1]), Point(gAveLine[2], gAveLine[3]), Color::green(), 1, 8);
+		boxWrite(out, decStr(getAngle(gAveLine)), Point(10, 42));
+
+		//green top/bottom pts and line
+		double xTop = (y_offset - gAveLine[1])/getSlope(gAveLine) + gAveLine[0];
+		double yIntercept = gAveLine[1] - getSlope(gAveLine)*gAveLine[0];
+		gTopPt = Point(xTop, y_offset);
+		if (yIntercept < out.rows)
+			gBotPt = Point(0, int(yIntercept));
+		else {
+			double xBottom = (out.rows - gAveLine[1]) / getSlope(gAveLine) + gAveLine[0];
+			gBotPt = Point(int(xBottom), out.rows);
+		}
+		line(out, gTopPt, gBotPt, Color::orange(), 1, 8);
+		circle(out, gBotPt, 4, Color::white(), -1, 8);
+		circle(out, gTopPt, 4, Color::white(), -1, 8);
 	}
 	if (reds.size() > 0) {
 		rAveLine = std::accumulate(reds.begin(), reds.end(), Vec4i(0, 0, 0, 0)) / int(reds.size());
-		line(out, Point(rAveLine[0], rAveLine[1]), Point(rAveLine[2], rAveLine[3]), Color::red(), 2, 8);
-		rAngle = getAngle(rAveLine);
-		boxWrite(out, decStr(rAngle), Point(300, 42));
+		line(out, Point(rAveLine[0], rAveLine[1]), Point(rAveLine[2], rAveLine[3]), Color::red(), 1, 8);
+		boxWrite(out, decStr(getAngle(rAveLine)), Point(300, 42));
+
+		//red top/bottom pts and line
+		double xTop = (y_offset - rAveLine[1]) / getSlope(rAveLine) + rAveLine[0];
+		double yIntercept = getSlope(rAveLine)*(out.cols - rAveLine[0])+rAveLine[1];
+		rTopPt = Point(int(xTop), y_offset);
+		if (yIntercept < out.rows) 
+			rBotPt = Point(out.cols, int(yIntercept));
+		else {
+			double xBottom = (out.rows - rAveLine[1]) / getSlope(rAveLine) + rAveLine[0];
+			rBotPt = Point(int(xBottom), out.rows);
+		}
+		line(out, rTopPt, rBotPt, Color::orange(), 1, 8);
+		circle(out, rBotPt, 4, Color::white(), -1, 8);
+		circle(out, rTopPt, 4, Color::white(), -1, 8);
+
 		if(greens.size() > 0) //if both are > 0
-			angleSums.emplace_front(rAngle + gAngle);
+			angleSums.emplace_front(getAngle(rAveLine) + getAngle(gAveLine));
 	}
 	if (angleSums.size() == 9) {
 		double angleAve = std::accumulate(angleSums.begin(), angleSums.end(), 0.0)/9;
@@ -97,7 +123,6 @@ void Alg::drawLines(Mat& out, vector<Vec4i> greens, vector<Vec4i> reds) {
 			drawWarnArrows(out, angleAve);
 	}
 }
-
 void Alg::drawMarks(Mat& out) {
 	y_offset = int(offsetFactor * out.rows);
 	Point yelPts[9] = { topMidP = Point(int(.5*out.cols), y_offset),
@@ -109,7 +134,6 @@ void Alg::drawMarks(Mat& out) {
 	for (int i = 0; i < 9; i++)
 		circle(out, yelPts[i], 3, Color::yellow(), -1, 8);
 }
-
 Mat Alg::initMats(Mat src, Mat& out) {
 	resize(src, src, Size(int(resizeFactor*src.size().width), int(resizeFactor*src.size().height)));
 	out = src.clone();
@@ -118,7 +142,6 @@ Mat Alg::initMats(Mat src, Mat& out) {
 	return src_gray;
 	Mat tmp = Mat(src.size(), COLOR_GRAY2BGR);
 }
-
 void Alg::drawOrAndYel(Mat& out) {
 	line(out, Point(farSlopeVec[0][0], farSlopeVec[0][1]), Point(farSlopeVec[0][2], farSlopeVec[0][3]), Color::yellow(), 2, LINE_8, 0);
 	int num = 6;
