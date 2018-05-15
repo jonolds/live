@@ -1,19 +1,11 @@
-#ifndef _HELPER_HPP_
-#define  _HELPER_HPP_
+#ifndef HELPER_HPP
+#define  HELPER_HPP
 #include <opencv2/opencv.hpp>
 #include <opencv2/viz/types.hpp>
 #include <vector>
 #include <math.h>
 #include <iomanip>
 using namespace std; using namespace cv; using namespace viz;
-
-Size getSize(VideoCapture vc) {
-	return Size(int(vc.get(CAP_PROP_FRAME_WIDTH)), int(vc.get(CAP_PROP_FRAME_HEIGHT)));
-}
-void setSize(VideoCapture reader, Size reqSize) {
-	reader.set(CAP_PROP_FRAME_WIDTH, reqSize.width);
-	reader.set(CAP_PROP_FRAME_HEIGHT, reqSize.height);
-}
 
 void drawWarnArrows(Mat & out, double angle) {
 	if (angle < 0) {

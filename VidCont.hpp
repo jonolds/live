@@ -2,8 +2,7 @@
 #define _VIDCONT_H_
 #include <opencv2/opencv.hpp>
 #include <opencv2/videoio.hpp>
-#include "Alg.hpp"
-#include "helper.hpp"
+#include "Alg.h"
 using namespace cv; using namespace std;
 
 class VidCont {
@@ -16,6 +15,9 @@ public:
 	//VidCont member functions
 	VidCont(string inVidPath, string outVidPath);		~VidCont();
 	void initWriter(), endAll(), run();
+
+	Size getSize(VideoCapture vc);
+	void setSize(VideoCapture reader, Size reqSize);
 };
 VidCont::VidCont(string inVidPath = "", string outVidPath = "") {
 	outVid = outVidPath;
@@ -68,4 +70,11 @@ void VidCont::initWriter() {
 void VidCont::endAll() { writer.release(); reader.release(); cvDestroyAllWindows(); }
 
 VidCont::~VidCont() { writer.release(); reader.release(); cvDestroyAllWindows(); }
+Size VidCont::getSize(VideoCapture vc) {
+	return Size(int(vc.get(CAP_PROP_FRAME_WIDTH)), int(vc.get(CAP_PROP_FRAME_HEIGHT)));
+}
+void VidCont::setSize(VideoCapture reader, Size reqSize) {
+	reader.set(CAP_PROP_FRAME_WIDTH, reqSize.width);
+	reader.set(CAP_PROP_FRAME_HEIGHT, reqSize.height);
+}
 #endif

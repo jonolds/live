@@ -1,7 +1,6 @@
 #include <opencv2/opencv.hpp>
 #include <fstream>
 #include "VidCont.hpp"
-
 using namespace std;
 using namespace cv;
 

@@ -15,18 +15,21 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Alg.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="helper.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="VidCont.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Alg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="live.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Alg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

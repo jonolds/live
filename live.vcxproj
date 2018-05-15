@@ -115,11 +115,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Alg.hpp" />
+    <ClInclude Include="Alg.h" />
     <ClInclude Include="helper.hpp" />
     <ClInclude Include="VidCont.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Alg.cpp" />
     <ClCompile Include="live.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
