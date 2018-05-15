@@ -7,6 +7,14 @@
 #include <iomanip>
 using namespace std; using namespace cv; using namespace viz;
 
+Size getSize(VideoCapture vc) {
+	return Size(int(vc.get(CAP_PROP_FRAME_WIDTH)), int(vc.get(CAP_PROP_FRAME_HEIGHT)));
+}
+void setSize(VideoCapture reader, Size reqSize) {
+	reader.set(CAP_PROP_FRAME_WIDTH, reqSize.width);
+	reader.set(CAP_PROP_FRAME_HEIGHT, reqSize.height);
+}
+
 void drawWarnArrows(Mat & out, double angle) {
 	if (angle < 0) {
 		arrowedLine(out, Point(60, 15), Point(20, 15), Color::black(), 7, FILLED, 0, 0.25);
@@ -24,15 +32,22 @@ void boxWrite(Mat& mat, String str, Point pt) {
 	rectangle(mat, Point(pt.x, pt.y + 2), Point(pt.x + sz.width, pt.y - sz.height - 1), Color::black(), -1, 8);
 	putText(mat, str, pt, /*FONT*/ 4, .5, Color::white(), 1, 8);
 }
-double getAngle(Vec4i lines, int& x1, int& y1, int& x2, int&y2) {
-	x1 = lines[0], y1 = lines[1], x2 = lines[2], y2 = lines[3];
+double getSlope(Vec4i line) {
+	int x1 = line[0], y1 = line[1], x2 = line[2], y2 = line[3];
 	double slope = x2 - x1 != 0 ? double(y2 - y1) / double(x2 - x1) : 999;
-	return slope != 999 ? (atan(slope) * 180) / CV_PI : 999.0;
+	return slope;
 }
-double getAngle(Vec4i lines) {
-	int x1 = lines[0], y1 = lines[1], x2 = lines[2], y2 = lines[3];
+double getAngle(Vec4i line, int& x1, int& y1, int& x2, int&y2) {
+	x1 = line[0], y1 = line[1], x2 = line[2], y2 = line[3];
 	double slope = x2 - x1 != 0 ? double(y2 - y1) / double(x2 - x1) : 999;
-	return slope != 999 ? (atan(slope) * 180) / CV_PI : 999.0;
+	double angle = slope != 999 ? (atan(slope) * 180) / CV_PI : 999.0;
+	return angle;
+}
+double getAngle(Vec4i line) {
+	int x1 = line[0], y1 = line[1], x2 = line[2], y2 = line[3];
+	double slope = x2 - x1 != 0 ? double(y2 - y1) / double(x2 - x1) : 999;
+	double angle = slope != 999 ? (atan(slope) * 180) / CV_PI : 999.0;
+	return angle;
 }
 
 string decStr(double num) {

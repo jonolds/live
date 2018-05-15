@@ -117,7 +117,7 @@
   <ItemGroup>
     <ClInclude Include="Alg.hpp" />
     <ClInclude Include="helper.hpp" />
-    <ClInclude Include="VideoController.hpp" />
+    <ClInclude Include="VidCont.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="live.cpp" />

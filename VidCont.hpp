@@ -3,6 +3,7 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/videoio.hpp>
 #include "Alg.hpp"
+#include "helper.hpp"
 using namespace cv; using namespace std;
 
 class VidCont {
@@ -10,75 +11,61 @@ public:
 	VideoCapture reader;		VideoWriter writer;
 	Alg* mod;
 	int fps = 25, frameCount = 0;
-	Size actualSize, reqSize;
-	string outWin, outVid, inVidName = "";
-	bool stop = false, isSave = false, isVidOpen = false, isWrInit = false;
+	string outVid, outWin = "out";
+	bool isVidOpen = false, isWrInit = false;
 	//VidCont member functions
-	VidCont();		~VidCont();
-	void initWriter(), endAndReleaseAll(), run(), setup(string inVid), setSize();
-	void setVariables(string oVidName, string oWinName, bool sv, int w, int h);
+	VidCont(string inVidPath, string outVidPath);		~VidCont();
+	void initWriter(), endAll(), run();
 };
-
-void VidCont::setup(string inVid = "") {
+VidCont::VidCont(string inVidPath = "", string outVidPath = "") {
+	outVid = outVidPath;
 	mod = new Alg();
 	reader.release();
-	if (!inVid.empty()) {
-		reader.open(inVid);
-		cout << reader.get(CAP_PROP_FRAME_WIDTH) << " " << reader.get(CAP_PROP_FRAME_HEIGHT) << "\n";
+	if (!inVidPath.empty()) {
+		reader.open(inVidPath);
 		if (!reader.isOpened()) { cout << "Bad file read\n"; reader.release(); CV_Assert(false); }
-		fps = reader.get(CAP_PROP_FPS);
-		setVariables("outVid.mp4", "vid", false, reader.get(CAP_PROP_FRAME_WIDTH), reader.get(CAP_PROP_FRAME_HEIGHT));
+		fps = int(reader.get(CAP_PROP_FPS));
 	}
 	else {
-		cout << "live";
-		setVariables("outVid.mp4", "live", true, 1280, 720);
 		reader.open(0);
 		if (!reader.isOpened()) { cout << "Cam not open\n"; reader.release(); CV_Assert(false); }
-		setSize();
+		setSize(reader, Size(1280, 720));
 	}
 	isVidOpen = true;
 }
 
 void VidCont::run() {
 	CV_Assert(isVidOpen);
-	Mat currentFrame, outFrame;
-	startWindowThread(); namedWindow(outWin, WINDOW_GUI_EXPANDED);
+	Mat curFrame, outFrame;
+	startWindowThread(); namedWindow(outWin, WINDOW_AUTOSIZE);
 	initWriter();
-	while (!stop) {
-		if (!reader.read(currentFrame)) // read next frame
-			break;
-		int initialTime = getTickCount();
-		mod->process(currentFrame, outFrame);
+	while (true) {
+		if (!reader.read(curFrame))
+			break; 
+		auto initialTime = getTickCount();
+		mod->process(curFrame, outFrame);
+		cout << outFrame.size() <<"\n";
 		imshow(outWin, outFrame);
-		if(isSave)
+		if(!outVid.empty())
 			writer.write(outFrame);
-		int elaspedTime = int((getTickCount() - initialTime) / (1000 * getTickFrequency()));
-		int remainingTime = (1000 / fps) - (elaspedTime); //prevents early process of next frame
+		double elapsedTime = (getTickCount() - initialTime) / (1000 * getTickFrequency());
+		double remainingTime = (1000 / fps) - (elapsedTime); //prevents early proc of next frame
 		frameCount++;
-		(remainingTime > 1) ? waitKey(remainingTime) : waitKey(1);  //waitKey();
+		(remainingTime > 1) ? waitKey(int(remainingTime)) : waitKey(1);  //waitKey();
 	}
-	endAndReleaseAll();
+	endAll();
 }
-void VidCont::setVariables(string oVidName, string oWinName, bool sv, int w, int h) {
-	outVid = oVidName; outWin = oWinName; isSave = sv; reqSize = Size(w, h); }
 void VidCont::initWriter() {
-	if (isSave) {
+	if (!outVid.empty()) {
+		cout << "balls\n";
 		writer.release();
 		int codec = static_cast<int>(reader.get(CAP_PROP_FOURCC));
-		writer.open(outVid, codec, fps, actualSize, true);
+		writer.open(outVid, codec, fps, getSize(reader), true);
 		if (!writer.isOpened()) { cout << "Err opening " << outVid << ")\n"; writer.release(); CV_Assert(false); }
 		isWrInit = true;
 	}
 }
+void VidCont::endAll() { writer.release(); reader.release(); cvDestroyAllWindows(); }
 
-void VidCont::setSize() {
-	reader.set(CAP_PROP_FRAME_WIDTH, reqSize.width);
-	reader.set(CAP_PROP_FRAME_HEIGHT, reqSize.height);
-	actualSize = Size(int(reader.get(CAP_PROP_FRAME_WIDTH)), int(reader.get(CAP_PROP_FRAME_HEIGHT)));
-	cout << "\n\nsetSize() -- \nrequested width: " << reqSize.width << "\n   requested height: " << reqSize.height <<
-		"\nactual width: " << actualSize.width << "\nactual height: " << actualSize.height << "\n\n";
-}
-void VidCont::endAndReleaseAll() { writer.release(); reader.release(); cvDestroyAllWindows(); }
-VidCont::VidCont() {}
 VidCont::~VidCont() { writer.release(); reader.release(); cvDestroyAllWindows(); }
 #endif
