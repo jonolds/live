@@ -46,7 +46,6 @@ void VidCont::run() {
 			break; 
 		auto initialTime = getTickCount();
 		mod->process(curFrame, outFrame);
-		cout << outFrame.size() <<"\n";
 		imshow(outWin, outFrame);
 		if(!outVid.empty())
 			writer.write(outFrame);
@@ -59,7 +58,6 @@ void VidCont::run() {
 }
 void VidCont::initWriter() {
 	if (!outVid.empty()) {
-		cout << "balls\n";
 		writer.release();
 		int codec = static_cast<int>(reader.get(CAP_PROP_FOURCC));
 		writer.open(outVid, codec, fps, getSize(reader), true);

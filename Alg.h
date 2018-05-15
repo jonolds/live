@@ -18,10 +18,12 @@ public:
 	bool l2 = false, test = false;
 	Point topLeftP, topMidLeftP, topMidRightP, topRightP, topMidP, leftSideP, rightSideP, botLeftP, botRightP;
 	Point gTopPt, gBotPt, rTopPt, rBotPt;
+	deque<Point> gTopDeq, gBotDeq, rTopDeq, rBotDeq;
+	Point nextTriLeft, nextTriRight;
 	Alg() {}; ~Alg() { cvDestroyAllWindows(); }
-	Mat init(Mat src, Mat&  out), applyCanny(Mat src_gray);
+	Mat init(Mat src, Mat&  out), applyCanny(Mat src_gray, Mat& out);
 	void process(Mat& src, Mat& out), applyHoughP(Mat& im_edge, Mat& out, vector<Vec4i>& lines);
-	void sortLines(Mat& img, vector<Vec4i>& lines, vector<Vec4i>& greens, vector<Vec4i>& reds);
+	void sortLines(Mat& out, vector<Vec4i>& lines, vector<Vec4i>& greens, vector<Vec4i>& reds);
 	void drawLines(Mat& out, vector<Vec4i> greens, vector<Vec4i> reds);
 	void drawMarks(Mat& out);
 };
