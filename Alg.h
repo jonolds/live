@@ -1,30 +1,49 @@
 #ifndef ALG_H
-#define  ALG_HPP
+#define  ALG_H
 #include <opencv2/opencv.hpp>
 #include <opencv2/viz/types.hpp>
 #include <vector>
 #include <math.h>
 #include <iomanip>
 #include <numeric>
-
+class Alg;
+const enum COLOR : int { RED, GREEN };
 using namespace std; using namespace cv; using namespace viz;
+
+struct LaneLine {
+	LaneLine() {};
+	LaneLine(int col, Alg* alg) {
+		color = bool(col);
+		aveLine = Vec4i::all(0);
+		mod = alg;
+	};
+	~LaneLine() {}
+	Alg *mod;
+	Vec4i aveLine;
+	Point topPt, botPt;
+	vector<Vec4i> lines;
+	deque<Point> topPtDeq, botPtDeq;
+	bool color;
+};
+
 class Alg {
 public:
-	Vec4i gAveLine, rAveLine;
-	vector<Vec4i> farSlopeVec;
-	deque<double> angleSums;
-	int y_offset, frameCountAlg = 0, hThresh = 30, minAngle, maxAngle;
+	Alg() {
+		g = LaneLine(GREEN, this);
+		r = LaneLine(RED, this);
+	};
+	~Alg() { cvDestroyAllWindows(); }
+	LaneLine g, r;
+	deque<double> angleSumsDeq;
+	int y_offset, frCntAlg = 0, hThresh, minAngle, maxAngle;
 	double lowThr, highThr, minLen, maxGap, resizeFactor = .35, offsetFactor = .2;
-	bool l2 = false, test = false;
-	Point topLeftP, topMidLeftP, topMidRightP, topRightP, topMidP, leftSideP, rightSideP, botLeftP, botRightP;
-	Point gTopPt, gBotPt, rTopPt, rBotPt;
-	deque<Point> gTopDeq, gBotDeq, rTopDeq, rBotDeq;
+	Point topLPt, topMidLPt, topMidRPt, topRightPt, topMidPt, sideLPt, sideRPt, botLPt, botRPt;
 	Point nextTriLeft, nextTriRight;
-	Alg() {}; ~Alg() { cvDestroyAllWindows(); }
-	Mat init(Mat src, Mat&  out), applyCanny(Mat src_gray, Mat& out);
-	void process(Mat& src, Mat& out), applyHoughP(Mat& im_edge, Mat& out, vector<Vec4i>& lines);
-	void sortLines(Mat& out, vector<Vec4i>& lines, vector<Vec4i>& greens, vector<Vec4i>& reds);
-	void drawLines(Mat& out, vector<Vec4i> greens, vector<Vec4i> reds);
+	Mat init(Mat src, Mat&  out); 
+	void process(Mat& src, Mat& out); 
+	void applyCannyHough(Mat src_gray, Mat& out, vector<Vec4i>& lines);
+	void sortLines(Mat& out, vector<Vec4i>& lines);
+	void drawLaneLines(Mat& out, LaneLine& lane);
 	void drawMarks(Mat& out);
 };
 #endif

@@ -15,13 +15,13 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="helper.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="VidCont.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Alg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="helper.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
