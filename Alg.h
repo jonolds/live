@@ -30,7 +30,7 @@ struct LaneLine {
 
 class Alg {
 public:
-	Mat inSmall, grayImg, blurImg, maskImg, edgeImg, houghImg, outFrame, tmp;
+	Mat inSmall, grayImg, blurImg, cannyImg, maskDispImg, cannyMaskedImg, houghImg, outFrame;
 	LaneLine *gTop, *rTop;//, *gBot, *rBot;
 	deque<double> angleSumsDeq;
 	int y_offset, frCntAlg = 0, hThresh, minAngle, maxAngle;
@@ -42,16 +42,17 @@ public:
 	Alg();//, gBot = new LaneLine(GREEN, this), rBot = new LaneLine(RED, this); }
 	~Alg() { cvDestroyAllWindows(); }
 	Mat process(Mat inFrame);
-	void init(Mat inFrame);  
-	void canny();
-	void mask(Scalar color);
-	void hough(vector<Vec4i> & lines);
+	Mat init();
+	Mat superBlur();
+	Mat canny();
+	Mat mask(Mat img, Scalar color);
+	Mat hough(vector<Vec4i> & lines);
 	void sortLines(vector<Vec4i>& lines);
-	void drawLaneLines(LaneLine *lane);
-	void drawMarks();
+	void drawLaneLines(Mat& outMat, LaneLine *lane);
+	void drawMarks(Mat& outMat);
 	
 	//helper
-	void drawLaneLines(LaneLine *lane, LaneLine *lane2);
+	Mat drawLaneLines(LaneLine *lane, LaneLine *lane2);
 	void showImages();
 	void cleanup();
 };

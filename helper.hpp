@@ -52,11 +52,6 @@ inline void setLinePts(int rows, int cols, LaneLine*& lane, LaneLine*& lane2) {
 	setLinePts(rows, cols, lane2);
 }
 
-inline void Alg::drawLaneLines(LaneLine *lane, LaneLine *lane2) {
-	drawLaneLines(lane);
-	drawLaneLines(lane2);
-}
-
 inline void drawWarnArrows(Mat& out, double angle) {
 	if (angle < 0) {
 		arrowedLine(out, Point(60, 15), Point(20, 15), black, 7, FILLED, 0, 0.25);
@@ -123,32 +118,48 @@ inline void addLabel(Mat& img, string text) {
 
 inline void cvtColAddLabel(vector<Mat>& vec, string* labels) {
 	for(int i = 0; i < vec.size(); i++) {
-		if(vec.at(i).type() == 0) 
-			cvtColor(vec.at(i), vec.at(i), COLOR_GRAY2BGR);
-		addLabel(vec.at(i), labels[i]);
+		if(vec[i].type() == 0) 
+			cvtColor(vec[i], vec[i], COLOR_GRAY2BGR);
+		addLabel(vec[i], labels[i]);
 	}
+}
+inline Mat getRow(Mat img1, Mat img2, Mat img3) {
+	hconcat(img1, img2, img1);
+	hconcat(img1, img3, img1);
+	return img1;
+}
+
+inline Mat concatCols(Mat row1, Mat row2, Mat row3) {
+	vconcat(row1, row2, row1);
+	vconcat(row1, row3, row1);
+	return row1;
+}
+
+inline Mat grayMat(Mat img) {
+	return Mat(img.size(), img.type(), Scalar(64,64,64));
 }
 
 inline void Alg::showImages() {
-	Mat row1, row2, row3;
-	vector<Mat> mats= {inSmall, grayImg, blurImg, maskImg, edgeImg, houghImg, outFrame};
-	string labels[] = { "inSmall", "gray", "blur", "mask", "edge", "hough", "outFrame" };
-	cvtColAddLabel(mats, labels);
-	hconcat(mats.at(0), mats.at(1), row1);
-	hconcat(mats.at(2), mats.at(3), row2);
-	hconcat(mats.at(4), mats.at(5), row3);
-	vconcat(row1, row2, row1);
-	vconcat(row1, row3, row1);
-	imshow("inSmall - grayImg - blurImg - edge - hough - outFrame", reSz(row1, .8));
+	vector<Mat> m= {inSmall, grayImg, blurImg, cannyImg, maskDispImg, cannyMaskedImg, houghImg, outFrame};
+	string labels[] = {"inSmall", "gray", "blur", "cannyImg", "maskDispImg", "cannyMaskedImg", "hough", "outFrame"};
+	cvtColAddLabel(m, labels);
+	
+	Mat dispImg = concatCols(getRow(m[0], m[1], m[2]), getRow(m[3], m[4], m[5]), getRow(m[6], m[7], grayMat(m[7])));
+
+	imshow("inSmall - grayImg - blurImg - edge - hough - outFrame", reSz(dispImg, .8));
 	waitKey(25);
 }
 
-inline Mat superBlur(Mat grayImg) {
-	Mat blurImg = grayImg.clone();
-	blur(blurImg, blurImg, Size(5, 5));
-	GaussianBlur(blurImg, blurImg, Size(7, 7), 4);
-	GaussianBlur(blurImg, blurImg, Size(5, 7), 4);
-	return blurImg;
+inline Mat gr2col(Mat mat) {
+	Mat col;
+	cvtColor(mat, col, COLOR_GRAY2BGR);
+	return col;
+}
+
+inline Mat col2gr(Mat mat) {
+	Mat gr;
+	cvtColor(mat, gr, COLOR_BGR2GRAY);
+	return gr;
 }
 
 inline void Alg::cleanup() {
