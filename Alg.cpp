@@ -13,7 +13,9 @@ Mat Alg::process(Mat inFrame) {
 	vector<Vec4i> allLines;
 	init(inFrame);						//Set values, resize inFrame, get grayImg
 	canny();
+	mask(black);
 	hough(allLines);
+	mask(yellow);
 	sortLines(allLines);
 	drawLaneLines(gTop, rTop);
 	drawMarks();
@@ -24,18 +26,18 @@ Mat Alg::process(Mat inFrame) {
 
 void Alg::canny() {
 	blurImg = superBlur(grayImg);
-	edgeImg = Mat(blurImg.size(), CV_8U, black);
 	Canny(blurImg, edgeImg, lowThr, highThr, 3, false);
 }
 
-void Alg::mask() {
-	rectangle(edgeImg, Point(0, y_offset), Point(cols, 0), black, -1);
+void Alg::mask(Scalar color) {
+	maskImg = edgeImg.clone();
+	rectangle(maskImg, Point(0, y_offset), Point(cols, 0), color, -1);
 	Point triangle[3] = { Point(int(.1*cols), rows), Point(int(.9*cols), rows), Point(int(.5*cols), y_offset) };
-	fillConvexPoly(edgeImg, triangle, 3, black);
+	fillConvexPoly(maskImg, triangle, 3, color);
 }
 
 void Alg::hough(vector<Vec4i> & lines) {
-	HoughLinesP(edgeImg, lines, 1, 1 * CV_PI / 180, hThresh, minLen, maxGap); //1st best{30, 20, 20}>{30,10,20}>{40, 20, 10} 
+	HoughLinesP(maskImg, lines, 1, 1 * CV_PI / 180, hThresh, minLen, maxGap); //1st best{30, 20, 20}>{30,10,20}>{40, 20, 10} 
 	linez(houghImg, lines, green);
 }
 
@@ -82,7 +84,8 @@ void Alg::drawMarks() {
 
 void Alg::init(Mat inFrame) {
 	gTop = new LaneLine(GREEN, this), rTop = new LaneLine(RED, this);
-	/*Canny*/lowThr = 30, highThr = 105, /*Hough*/ hThresh = 15, minLen = 20, maxGap = 70;
+	lowThr = 30, highThr = 105;						//Canny
+	hThresh = 15, minLen = 20, maxGap = 70;			//Hough
 	inSmall = reSz(inFrame, .35);					//get inSmall
 	outFrame = inSmall.clone();						//init outFrame
 	houghImg = inSmall.clone();						//init houghImg

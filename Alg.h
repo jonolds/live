@@ -44,7 +44,7 @@ public:
 	Mat process(Mat inFrame);
 	void init(Mat inFrame);  
 	void canny();
-	void mask();
+	void mask(Scalar color);
 	void hough(vector<Vec4i> & lines);
 	void sortLines(vector<Vec4i>& lines);
 	void drawLaneLines(LaneLine *lane);

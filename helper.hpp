@@ -67,10 +67,10 @@ inline void drawWarnArrows(Mat& out, double angle) {
 	}
 }
 
-inline void boxWrite(Mat& mat, String str, Point pt) {
+inline void boxWrite(Mat& mat, String str, Point pt, Scalar boxCol = black) {
 	int bs = 0;
 	Size sz = getTextSize(str, 4, .5, 1, &bs);
-	rectangle(mat, Point(pt.x, pt.y + 2), Point(pt.x + sz.width, pt.y - sz.height - 1), black, -1, 8);
+	rectangle(mat, Point(pt.x, pt.y + 2), Point(pt.x + sz.width, pt.y - sz.height - 1), boxCol, -1, 8);
 	putText(mat, str, pt, /*FONT*/ 4, .5, white, 1, 8);
 }
 
@@ -116,23 +116,39 @@ inline Vec4i pt2vec(Point a, Point b) {
 	return Vec4i(a.x, a.y, b.x, b.y);
 }
 
+inline void addLabel(Mat& img, string text) {
+	vconcat(img, Mat(Size(img.cols, 28), img.type(), gray), img);
+	boxWrite(img, text, Point(5, img.rows - 8), gray);
+}
+
+inline void cvtColAddLabel(vector<Mat>& vec, string* labels) {
+	for(int i = 0; i < vec.size(); i++) {
+		if(vec.at(i).type() == 0) 
+			cvtColor(vec.at(i), vec.at(i), COLOR_GRAY2BGR);
+		addLabel(vec.at(i), labels[i]);
+	}
+}
+
 inline void Alg::showImages() {
-	Mat first, second, third, grayTmp, blurTmp, edgeTmp;
-	cvtColor(grayImg, grayTmp, COLOR_GRAY2BGR); cvtColor(blurImg, blurTmp, COLOR_GRAY2BGR); cvtColor(edgeImg, edgeTmp, COLOR_GRAY2BGR);
-	hconcat(inSmall, grayTmp, first);
-	hconcat(blurTmp, edgeTmp, second);
-	hconcat(houghImg, outFrame, third);
-	vconcat(first, second, first);
-	vconcat(first, third, first);
-	imshow("inSmall - grayImg - blurImg - edge - hough - outFrame", reSz(first, .9));
-	waitKey(1);
+	Mat row1, row2, row3;
+	vector<Mat> mats= {inSmall, grayImg, blurImg, maskImg, edgeImg, houghImg, outFrame};
+	string labels[] = { "inSmall", "gray", "blur", "mask", "edge", "hough", "outFrame" };
+	cvtColAddLabel(mats, labels);
+	hconcat(mats.at(0), mats.at(1), row1);
+	hconcat(mats.at(2), mats.at(3), row2);
+	hconcat(mats.at(4), mats.at(5), row3);
+	vconcat(row1, row2, row1);
+	vconcat(row1, row3, row1);
+	imshow("inSmall - grayImg - blurImg - edge - hough - outFrame", reSz(row1, .8));
+	waitKey(25);
 }
 
 inline Mat superBlur(Mat grayImg) {
-	blur(grayImg, grayImg, Size(5, 5));
-	GaussianBlur(grayImg, grayImg, Size(7, 7), 4);
-	GaussianBlur(grayImg, grayImg, Size(5, 7), 4);
-	return grayImg;
+	Mat blurImg = grayImg.clone();
+	blur(blurImg, blurImg, Size(5, 5));
+	GaussianBlur(blurImg, blurImg, Size(7, 7), 4);
+	GaussianBlur(blurImg, blurImg, Size(5, 7), 4);
+	return blurImg;
 }
 
 inline void Alg::cleanup() {
@@ -151,7 +167,7 @@ inline void drawCVfitline(Mat& outImg, LaneLine* lane) {
 		Point2d b = Point2d(fitline[2], fitline[3]);
 		double xIni = ((outImg.rows - b.y) / m) + b.x;
 		double xFin = ((0 - b.y) / m) + b.x;
-		Point a = Point(xIni, outImg.rows), c = Point(xFin, 0);
+		Point a = Point(int(xIni), outImg.rows), c = Point(int(xFin), 0);
 		linez(outImg, pt2vec(a, c), lane->color == RED ? white : yellow);
 	}
 }

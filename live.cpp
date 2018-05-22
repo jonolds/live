@@ -2,8 +2,7 @@
 #include <fstream>
 #include "VidCont.hpp"
 
-using namespace std;
-using namespace cv;
+using namespace std; using namespace cv;
 
 int main() {
 	//VidCont vid("../media/test10.mp4", "../media/outVid.avi");
