@@ -1,67 +1,158 @@
 #ifndef HELPER_HPP
-#define  HELPER_HPP
+#define HELPER_HPP
 #include <opencv2/opencv.hpp>
-#include <opencv2/viz/types.hpp>
 #include <vector>
-#include <math.h>
+#include <cmath>
 #include <iomanip>
 #include <numeric>
 #include "Alg.h"
-using namespace std; using namespace cv; using namespace viz;
+#include "colors.h"
+using namespace std; using namespace cv;
 
-string decStr(double num) {
+inline string decStr(double num) {
 	ostringstream obj;
 	obj << ((abs(num) < 1) ? setprecision(2) : ((abs(num) < 10)? setprecision(3) : setprecision(4))) << num;
 	return obj.str();
 }
-double getSlope(Vec4i line) {
+
+inline double getSlope(Vec4i line) {
 	return (line[2] - line[0] != 0) ? double(line[3] - line[1]) / double(line[2] - line[0]) : 999.0;
 }
-double getAngle(Vec4i line, int& x1, int& y1, int& x2, int&y2) {
-	x1 = line[0], y1 = line[1], x2 = line[2], y2 = line[3];
-	return (getSlope(line) != 999) ? (atan(getSlope(line)) * 180) / CV_PI : 999;
-}
-double getAngle(Vec4i line) {
+
+inline double getAngle(Vec4i line) {
 	return (getSlope(line) != 999) ? (atan(getSlope(line)) * 180) / CV_PI : 999.0;
 }
-void setLinePts(Mat out, LaneLine& lane) {
-	if (lane.lines.size() == 0)
-		lane.aveLine = Vec4i(0, 0, 0, 0);
+
+inline void setLinePts(int rows, int cols, LaneLine*& l) {
+	if (l->lines.empty())
+		l->aveFrLine = Vec4i(0, 0, 0, 0);
 	else {
-		lane.aveLine = std::accumulate(lane.lines.begin(), lane.lines.end(), Vec4i(0, 0, 0, 0)) / int(lane.lines.size());		
-		int xTop = int((lane.mod->y_offset - lane.aveLine[1]) / getSlope(lane.aveLine) + lane.aveLine[0]);
-		lane.topPt = Point(xTop, lane.mod->y_offset);
-		if (lane.color) {
-			int yL = int(getSlope(lane.aveLine)*(-lane.aveLine[0])+lane.aveLine[1]);
-			lane.botPt = (yL < out.rows) ? Point(0, yL) : Point(int((out.rows - yL) / getSlope(lane.aveLine)), out.rows);
+		l->aveFrLine = std::accumulate(l->lines.begin(), l->lines.end(), Vec4i(0, 0, 0, 0)) / int(l->lines.size());		
+		int xTop = int((l->mod->y_offset - l->aveFrLine[1]) / getSlope(l->aveFrLine) + l->aveFrLine[0]);
+		l->topPt = Point(xTop, l->mod->y_offset);
+		if (l->color) {
+			int yL = int(getSlope(l->aveFrLine)*(-l->aveFrLine[0])+l->aveFrLine[1]);
+			l->botPt = (yL < rows) ? Point(0, yL) : Point(int((rows - yL) / getSlope(l->aveFrLine)), rows);
 		}
 		else {
-			int yR = int(getSlope(lane.aveLine)*(out.cols - lane.aveLine[0]) + lane.aveLine[1]);
-			lane.botPt = (yR < out.rows) ? Point(out.cols, yR) : Point(int(((out.rows - yR) / getSlope(lane.aveLine)) + out.cols), out.rows);
+			int yR = int(getSlope(l->aveFrLine)*(cols - l->aveFrLine[0]) + l->aveFrLine[1]);
+			l->botPt = (yR < rows) ? Point(cols, yR) : Point(int(((rows - yR) / getSlope(l->aveFrLine)) + cols), rows);
 		}
-		lane.topPtDeq.emplace_front(lane.topPt);
-		lane.botPtDeq.emplace_front(lane.botPt);
-		if (lane.topPtDeq.size() > 3) {
-			lane.topPtDeq.pop_back();
-			lane.botPtDeq.pop_back();
+		l->topPtDeq.emplace_front(l->topPt);
+		l->botPtDeq.emplace_front(l->botPt);
+		if (l->topPtDeq.size() > 3) {
+			l->topPtDeq.pop_back();
+			l->botPtDeq.pop_back();
 		}
 	}
 }
 
-void drawWarnArrows(Mat & out, double angle) {
+inline void setLinePts(int rows, int cols, LaneLine*& lane, LaneLine*& lane2) {
+	setLinePts(rows, cols, lane);
+	setLinePts(rows, cols, lane2);
+}
+
+inline void Alg::drawLaneLines(LaneLine *lane, LaneLine *lane2) {
+	drawLaneLines(lane);
+	drawLaneLines(lane2);
+}
+
+inline void drawWarnArrows(Mat& out, double angle) {
 	if (angle < 0) {
-		arrowedLine(out, Point(60, 15), Point(20, 15), Color::black(), 7, FILLED, 0, 0.25);
-		arrowedLine(out, Point(60, 15), Point(20, 15), Color::green(), 2, FILLED, 0, 0.25);
+		arrowedLine(out, Point(60, 15), Point(20, 15), black, 7, FILLED, 0, 0.25);
+		arrowedLine(out, Point(60, 15), Point(20, 15), green, 2, FILLED, 0, 0.25);
 	} else {
-		arrowedLine(out, Point(out.cols - 60, 15), Point(out.cols - 20, 15), Color::black(), 7, FILLED, 0, 0.25);
-		arrowedLine(out, Point(out.cols - 60, 15), Point(out.cols - 20, 15), Color::red(), 2, FILLED, 0, 0.25);
+		arrowedLine(out, Point(out.cols - 60, 15), Point(out.cols - 20, 15), black, 7, FILLED, 0, 0.25);
+		arrowedLine(out, Point(out.cols - 60, 15), Point(out.cols - 20, 15), red, 2, FILLED, 0, 0.25);
 	}
 }
 
-void boxWrite(Mat& mat, String str, Point pt) {
+inline void boxWrite(Mat& mat, String str, Point pt) {
 	int bs = 0;
 	Size sz = getTextSize(str, 4, .5, 1, &bs);
-	rectangle(mat, Point(pt.x, pt.y + 2), Point(pt.x + sz.width, pt.y - sz.height - 1), Color::black(), -1, 8);
-	putText(mat, str, pt, /*FONT*/ 4, .5, Color::white(), 1, 8);
+	rectangle(mat, Point(pt.x, pt.y + 2), Point(pt.x + sz.width, pt.y - sz.height - 1), black, -1, 8);
+	putText(mat, str, pt, /*FONT*/ 4, .5, white, 1, 8);
+}
+
+inline int getTurnsForSpeed(double speed) {
+	//turns per speed (8x10^-5)x^4 - .0207x^3 + 1.9114x^2 - 78.976x + 1378.4
+	return int((8*pow(10, -5)*pow(speed, 4)) - (.0207*pow(speed, 3)) + (1.9114*pow(speed, 2)) - (78.976*speed) + 1378.4);
+}
+
+inline Mat reSz(Mat imgIn, double factor) {
+	Mat imgOut;
+	resize(imgIn, imgOut, Size(int(factor*imgIn.cols), int(factor*imgIn.rows)));
+	return imgOut;
+}
+inline void linez(Mat& mat, Vec4i vec, Scalar color, int thickness = 1, int offset = 0) {
+	line(mat, Point(vec[0], vec[1]+offset), Point(vec[2], vec[3]+offset), color, thickness);
+}
+
+inline void linez(Mat& mat, vector<Vec4i> vec, Scalar color, int thickness = 1, int offset = 0) {
+	for (const Vec4i& z : vec)
+		line(mat, Point(z[0], z[1]+offset), Point(z[2], z[3]+offset), color, thickness);
+}
+
+inline void circz(Mat& mat, Point p, Scalar color, int radius = 3) {
+	circle(mat, p, radius, color, -1, 8);
+}
+
+inline void circz(Mat& mat, vector<Point> pts, Scalar color, int radius = 3) {
+	for (const Point& z : pts)
+		circle(mat, z, radius, color, -1, 8);
+}
+
+inline void cirLine(Mat& mat, Vec4i vec, Scalar color, int thickness = 1, int offset = 0) {
+	line(mat, Point(vec[0], vec[1] + offset), Point(vec[2], vec[3] + offset), color, thickness);
+	circz(mat, Point(vec[0], vec[1]), color, thickness+2);
+	circz(mat, Point(vec[2], vec[3]), color, thickness+2);
+}
+inline void cirLine(Mat& mat, vector<Vec4i> vec, Scalar color, int thickness = 1, int offset = 0) {
+	for (const Vec4i& z : vec)
+		cirLine(mat, z, color, thickness, offset);
+}
+
+inline Vec4i pt2vec(Point a, Point b) {
+	return Vec4i(a.x, a.y, b.x, b.y);
+}
+
+inline void Alg::showImages() {
+	Mat first, second, third, grayTmp, blurTmp, edgeTmp;
+	cvtColor(grayImg, grayTmp, COLOR_GRAY2BGR); cvtColor(blurImg, blurTmp, COLOR_GRAY2BGR); cvtColor(edgeImg, edgeTmp, COLOR_GRAY2BGR);
+	hconcat(inSmall, grayTmp, first);
+	hconcat(blurTmp, edgeTmp, second);
+	hconcat(houghImg, outFrame, third);
+	vconcat(first, second, first);
+	vconcat(first, third, first);
+	imshow("inSmall - grayImg - blurImg - edge - hough - outFrame", reSz(first, .9));
+	waitKey(1);
+}
+
+inline Mat superBlur(Mat grayImg) {
+	blur(grayImg, grayImg, Size(5, 5));
+	GaussianBlur(grayImg, grayImg, Size(7, 7), 4);
+	GaussianBlur(grayImg, grayImg, Size(5, 7), 4);
+	return grayImg;
+}
+
+inline void Alg::cleanup() {
+	delete gTop;
+	delete rTop;
+}
+
+inline void drawCVfitline(Mat& outImg, LaneLine* lane) {
+	Vec4f fitline;
+	vector<Point> ptVec;
+	if (!lane->lines.empty()) {
+		for (Vec4i z : lane->lines)
+			ptVec.emplace_back(Point(z[0], z[1])), ptVec.emplace_back(Point(z[2], z[3]));
+		fitLine(ptVec, fitline, 2, 0, 0.1, 0.1);
+		double m = fitline[1] / fitline[0];
+		Point2d b = Point2d(fitline[2], fitline[3]);
+		double xIni = ((outImg.rows - b.y) / m) + b.x;
+		double xFin = ((0 - b.y) / m) + b.x;
+		Point a = Point(xIni, outImg.rows), c = Point(xFin, 0);
+		linez(outImg, pt2vec(a, c), lane->color == RED ? white : yellow);
+	}
 }
 #endif

@@ -1,9 +1,10 @@
-#ifndef _VIDCONT_H_
-#define _VIDCONT_H_
+#ifndef VIDCONT_H
+#define VIDCONT_H
 #include <opencv2/opencv.hpp>
 #include <opencv2/videoio.hpp>
 #include "Alg.h"
-using namespace cv; using namespace std;
+using namespace cv; 
+using namespace std;
 
 class VidCont {
 public:
@@ -18,7 +19,8 @@ public:
 	Size getSize(VideoCapture vc);
 	void setSize(VideoCapture reader, Size reqSize);
 };
-VidCont::VidCont(string inVidPath = "", string outVidPath = "") {
+
+inline VidCont::VidCont(string inVidPath = "", string outVidPath = "") {
 	outVid = outVidPath;
 	mod = new Alg();
 	reader.release();
@@ -31,31 +33,39 @@ VidCont::VidCont(string inVidPath = "", string outVidPath = "") {
 		reader.open(0);
 		if (!reader.isOpened()) { cout << "Cam not open\n"; reader.release(); CV_Assert(false); }
 		setSize(reader, Size(1280, 720));
+		reader.set(CAP_PROP_FPS, fps);
 	}
 	isVidOpen = true;
 }
 
-void VidCont::run() {
+inline void VidCont::run() {
 	CV_Assert(isVidOpen);
-	Mat curFrame, outFrame;
-	startWindowThread(); namedWindow(outWin, WINDOW_AUTOSIZE);
+	Mat curFrame;
+	startWindowThread(); //namedWindow(outWin, WINDOW_AUTOSIZE);
 	initWriter();
 	while (true) {
+		if(reader.get(CAP_PROP_POS_FRAMES) == reader.get(CAP_PROP_FRAME_COUNT)) {
+			reader.set(CAP_PROP_POS_FRAMES, -1);
+			delete mod;
+			mod = new Alg();
+		}
 		if (!reader.read(curFrame))
-			break; 
+			break;
 		auto initialTime = getTickCount();
-		mod->process(curFrame, outFrame);
-		imshow(outWin, outFrame);
+		Mat outFrame = mod->process(curFrame);	
+		frameCount++;
 		if(!outVid.empty())
 			writer.write(outFrame);
 		double elapsedTime = (getTickCount() - initialTime) / (1000 * getTickFrequency());
 		double remainingTime = (1000 / fps) - (elapsedTime); //prevents early proc of next frame
 		frameCount++;
-		(remainingTime > 1) ? waitKey(int(remainingTime)) : waitKey(1);  //waitKey();
+		waitKey(1);
+		//(remainingTime > 1) ? waitKey(int(remainingTime)) : waitKey(1);  //waitKey();
 	}
 	endAll();
 }
-void VidCont::initWriter() {
+
+inline void VidCont::initWriter() {
 	if (!outVid.empty()) {
 		writer.release();
 		int codec = static_cast<int>(reader.get(CAP_PROP_FOURCC));
@@ -64,10 +74,11 @@ void VidCont::initWriter() {
 		isWrInit = true;
 	}
 }
-void VidCont::endAll() { writer.release(); reader.release(); cvDestroyAllWindows(); }
-VidCont::~VidCont() { writer.release(); reader.release(); cvDestroyAllWindows(); }
-Size VidCont::getSize(VideoCapture vc) {return Size(int(vc.get(CAP_PROP_FRAME_WIDTH)), int(vc.get(CAP_PROP_FRAME_HEIGHT))); }
-void VidCont::setSize(VideoCapture reader, Size reqSize) {
+
+inline void VidCont::endAll() { writer.release(); reader.release(); cvDestroyAllWindows(); }
+inline VidCont::~VidCont() { writer.release(); reader.release(); cvDestroyAllWindows(); }
+inline Size VidCont::getSize(VideoCapture vc) {return Size(int(vc.get(CAP_PROP_FRAME_WIDTH)), int(vc.get(CAP_PROP_FRAME_HEIGHT))); }
+inline void VidCont::setSize(VideoCapture reader, Size reqSize) {
 	reader.set(CAP_PROP_FRAME_WIDTH, reqSize.width);
 	reader.set(CAP_PROP_FRAME_HEIGHT, reqSize.height);
 }

@@ -116,6 +116,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Alg.h" />
+    <ClInclude Include="colors.h" />
     <ClInclude Include="helper.hpp" />
     <ClInclude Include="VidCont.hpp" />
   </ItemGroup>
