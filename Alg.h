@@ -40,9 +40,9 @@ public:
 	Point nextTriLeft, nextTriRight;
 
 	Alg();//, gBot = new LaneLine(GREEN, this), rBot = new LaneLine(RED, this); }
-	~Alg() { cvDestroyAllWindows(); }
+	~Alg() { cvDestroyAllWindows(); delete gTop; delete rTop;}
 	Mat process(Mat inFrame);
-	Mat init();
+	Mat init(Mat inFrame);
 	Mat superBlur();
 	Mat canny();
 	Mat mask(Mat img, Scalar color);
@@ -54,6 +54,5 @@ public:
 	//helper
 	Mat drawLaneLines(LaneLine *lane, LaneLine *lane2);
 	void showImages();
-	void cleanup();
 };
 #endif

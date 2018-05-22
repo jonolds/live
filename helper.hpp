@@ -162,11 +162,6 @@ inline Mat col2gr(Mat mat) {
 	return gr;
 }
 
-inline void Alg::cleanup() {
-	delete gTop;
-	delete rTop;
-}
-
 inline void drawCVfitline(Mat& outImg, LaneLine* lane) {
 	Vec4f fitline;
 	vector<Point> ptVec;

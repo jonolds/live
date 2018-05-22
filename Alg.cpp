@@ -11,8 +11,8 @@ struct LaneLine;
 
 Mat Alg::process(Mat inFrame) {
 	vector<Vec4i> allLines;
-	inSmall = reSz(inFrame, .35);
-	grayImg = init();						//Set values, resize inFrame, get grayImg
+	inSmall = init(inFrame);						//Set values, resize inFrame, get grayImg
+	grayImg = col2gr(inSmall);
 	blurImg = superBlur();
 	cannyImg = canny();
 	maskDispImg = mask(gr2col(cannyImg), yellow);
@@ -21,7 +21,6 @@ Mat Alg::process(Mat inFrame) {
 	sortLines(allLines);
 	outFrame = drawLaneLines(gTop, rTop);
 	showImages();
-	cleanup();
 	return outFrame;
 }
 
@@ -103,12 +102,14 @@ void Alg::drawMarks(Mat& outMat) {
 	circz(outMat, yelPts, yellow);
 }
 
-Mat Alg::init() {
+Mat Alg::init(Mat inFrame) {
+	Mat inReSz = reSz(inFrame, .35);
+	rows = inReSz.rows; cols = inReSz.cols;
+	y_offset = int(offsetFactor * rows);			//y_offset based on inSmall
+	return inReSz;
+}
+Alg::Alg() {
 	gTop = new LaneLine(GREEN, this), rTop = new LaneLine(RED, this);
 	lowThr = 30, highThr = 105;						//Canny
 	hThresh = 15, minLen = 20, maxGap = 70;			//Hough
-	rows = inSmall.rows; cols = inSmall.cols;
-	y_offset = int(offsetFactor * rows);			//y_offset based on inSmall
-	return col2gr(inSmall);
 }
-Alg::Alg() {}
