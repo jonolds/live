@@ -11,78 +11,76 @@ struct LaneLine;
 
 Mat Alg::process(Mat inFrame) {
 	vector<Vec4i> allLines;
-	inSmall = init(inFrame);						//Set values, resize inFrame, get grayImg
-	grayImg = col2gr(inSmall);
-	blurImg = superBlur();
-	cannyImg = canny();
-	maskDispImg = mask(gr2col(cannyImg), yellow);
-	cannyMaskedImg = mask(cannyImg, black);
-	houghImg = hough(allLines);
-	sortLines(allLines);
+	init(inFrame);
+	cannyHough();
+
 	outFrame = drawLaneLines(gTop, rTop);
 	showImages();
+
+	rTop.clear(); gTop.clear();
 	return outFrame;
 }
 
-Mat Alg::superBlur() {
-	Mat blurMat = grayImg.clone();
-	blur(blurMat, blurMat, Size(5, 5));
-	GaussianBlur(blurMat, blurMat, Size(7, 7), 4);
-	GaussianBlur(blurMat, blurMat, Size(5, 7), 4);
-	return blurMat;
+void Alg::init(Mat inFrame) {
+	gTop.set(GREEN, this); rTop.set(RED, this);
+	inSmall = reSz(inFrame, .35); houghImg = inSmall.clone(); outFrame = inSmall.clone();
+	rows = inSmall.rows; cols = inSmall.cols;
+	y_offset = int(offsetFactor * rows);
 }
 
-Mat Alg::canny() {
-	Mat cannyMat;
-	Canny(blurImg, cannyMat, lowThr, highThr, 3, false);
-	return cannyMat;
-}
+void Alg::cannyHough() {
+	grayImg = col2gr(inSmall);
+	//Blur
+	blur(grayImg.clone(), blurImg, Size(5, 5));
+	GaussianBlur(blurImg, blurImg, Size(7, 7), 4);
+	GaussianBlur(blurImg, blurImg, Size(5, 7), 4);
 
-Mat Alg::mask(Mat img, Scalar color) {
-	Mat maskMat = img.clone();
-	rectangle(maskMat, Point(0, y_offset), Point(cols, 0), color, -1);
-	Point triangle[3] = { Point(int(.1*cols), rows), Point(int(.9*cols), rows), Point(int(.5*cols), y_offset) };
-	fillConvexPoly(maskMat, triangle, 3, color);
-	return maskMat;
-}
+	//Canny
+	lowThr = 20, highThr = 50;
+	Canny(blurImg, cannyImg, lowThr, highThr);
+	
+	//Mask
+	maskDispImg = mask(gr2col(cannyImg), yellow);
+	cannyMaskedImg = mask(cannyImg, black);
 
-Mat Alg::hough(vector<Vec4i> & lines) {
+	//Hough
+	vector<Vec4i> lines;
+	hThresh = 15, minLen = 20, maxGap = 70;			//Hough settings
 	HoughLinesP(cannyMaskedImg, lines, 1, 1 * CV_PI / 180, hThresh, minLen, maxGap); //1st best{30, 20, 20}>{30,10,20}>{40, 20, 10}
-	Mat houghMat = inSmall.clone();
-	linez(houghMat, lines, green);
-	return houghMat;
-}
+	linez(houghImg, lines, green);
 
-void Alg::sortLines(vector<Vec4i>& lines) {
+	//Sort into gTop/rTop lines
 	for (const Vec4i& line : lines) {
 		double angle = getAngle(line);
-		//Check if angle is between 20 and 62
-		if ((abs(angle) > 20) && (abs(angle) < 62)) {
-			//if angle is pos and both endpoint x values are greater than right midpoint add to reds
-			if ((angle > 0) && (line[0] > topMidRPt.x) && (line[2] > topMidRPt.x))
-				rTop->lines.emplace_back(line);
-			//if angle is neg and both endpoint x values are less than right midpoint add to greens
-			else if ((angle < 0) && (line[1] < topMidLPt.x) && (line[2] < topMidLPt.x))
-				gTop->lines.emplace_back(line);
-		}
+		if ((angle > 15) && (angle < 65) && (line[0] > topMidRPt.x) && (line[2] > topMidRPt.x))
+			rTop.lines.emplace_back(line);
+		else if ((angle < 15) && (angle < 65) && (line[0] < topMidLPt.x) && (line[2] < topMidLPt.x))
+			gTop.lines.emplace_back(line);
 	}
+
 	//set aveFrLine for both lanes
 	setLinePts(rows, cols, gTop, rTop);
-	if ((!gTop->lines.empty()) && (!rTop->lines.empty())) //if both are > 0
-		angleSumsDeq.emplace_front(getAngle(rTop->aveFrLine) + getAngle(gTop->aveFrLine));
+	if ((!gTop.lines.empty()) && (!rTop.lines.empty())) //if both are > 0
+		angleSumsDeq.emplace_front(getAngle(rTop.aveFrLine) + getAngle(gTop.aveFrLine));
 }
-Mat Alg::drawLaneLines(LaneLine *lane, LaneLine *lane2) {
+Mat Alg::mask(Mat img, Scalar color) {
+	rectangle(img, Point(0, y_offset), Point(cols, 0), color, -1);
+	Point triangle[3] = { Point(int(.1*cols), rows), Point(int(.9*cols), rows), Point(int(.5*cols), y_offset) };
+	fillConvexPoly(img, triangle, 3, color);
+	return img;
+}
+
+Mat Alg::drawLaneLines(LaneLine lane, LaneLine lane2) {
 	Mat outMat = inSmall.clone();
 	drawLaneLines(outMat, lane);
 	drawLaneLines(outMat, lane2);
 	drawMarks(outMat);
 	return outMat;
 }
-
-void Alg::drawLaneLines(Mat& outMat, LaneLine *lane) {
-	linez(outMat, lane->aveFrLine, red);
-	boxWrite(outMat, decStr(getAngle(lane->aveFrLine)), (lane->color) ? Point(10, 42) : Point(300, 42));
-	cirLine(outMat, pt2vec(lane->topPt, lane->botPt), magenta);
+void Alg::drawLaneLines(Mat& outMat, LaneLine lane) {
+	linez(outMat, lane.aveFrLine, red);
+	boxWrite(outMat, decStr(getAngle(lane.aveFrLine)), (lane.color) ? Point(10, 42) : Point(300, 42));
+	cirLine(outMat, pt2vec(lane.topPt, lane.botPt), magenta);
 	if (angleSumsDeq.size() == 9) {
 		double angleAve = std::accumulate(angleSumsDeq.begin(), angleSumsDeq.end(), 0.0) / 9;
 		boxWrite(outMat, decStr(angleAve), Point(170, 42));
@@ -91,7 +89,6 @@ void Alg::drawLaneLines(Mat& outMat, LaneLine *lane) {
 			drawWarnArrows(outMat, angleAve);
 	}
 }
-
 void Alg::drawMarks(Mat& outMat) {
 	linez(outMat, Vec4i(0, y_offset, cols, y_offset), pink);
 	vector<Point> yelPts = { topMidPt = Point(int(.5*cols), y_offset),
@@ -101,15 +98,11 @@ void Alg::drawMarks(Mat& outMat) {
 		sideLPt = Point(0, int(.34*rows)),					sideRPt = Point(cols, int(.34*rows)) };
 	circz(outMat, yelPts, yellow);
 }
-
-Mat Alg::init(Mat inFrame) {
-	Mat inReSz = reSz(inFrame, .35);
-	rows = inReSz.rows; cols = inReSz.cols;
-	y_offset = int(offsetFactor * rows);			//y_offset based on inSmall
-	return inReSz;
-}
-Alg::Alg() {
-	gTop = new LaneLine(GREEN, this), rTop = new LaneLine(RED, this);
-	lowThr = 30, highThr = 105;						//Canny
-	hThresh = 15, minLen = 20, maxGap = 70;			//Hough
+void Alg::showImages() {
+	vector<Mat> m = { inSmall, grayImg, blurImg, cannyImg, maskDispImg, cannyMaskedImg, houghImg, outFrame };
+	string labels[] = { "inSmall", "gray", "blur", "cannyImg", "maskDispImg", "cannyMaskedImg", "hough", "outFrame" };
+	cvtColAddLabel(m, labels);
+	Mat dispImg = concatCols(concatRow(m[0], m[1], m[2]), concatRow(m[3], m[4], m[5]), concatRow(m[6], m[7], grayMat(m[7])));
+	imshow("inSmall - grayImg - blurImg - edge - hough - outFrame", reSz(dispImg, .8));
+	waitKey(20);
 }

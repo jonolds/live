@@ -44,11 +44,11 @@ inline void VidCont::run() {
 	startWindowThread(); //namedWindow(outWin, WINDOW_AUTOSIZE);
 	initWriter();
 	while (true) {
-		if(reader.get(CAP_PROP_POS_FRAMES) == reader.get(CAP_PROP_FRAME_COUNT)) {
-			reader.set(CAP_PROP_POS_FRAMES, -1);
-			delete mod;
-			mod = new Alg();
-		}
+		//if(reader.get(CAP_PROP_POS_FRAMES) == reader.get(CAP_PROP_FRAME_COUNT)) {
+		//	reader.set(CAP_PROP_POS_FRAMES, -1);
+		//	delete mod;
+		//	mod = new Alg();
+		//}
 		if (!reader.read(curFrame))
 			break;
 		auto initialTime = getTickCount();
@@ -59,8 +59,9 @@ inline void VidCont::run() {
 		double elapsedTime = (getTickCount() - initialTime) / (1000 * getTickFrequency());
 		double remainingTime = (1000 / fps) - (elapsedTime); //prevents early proc of next frame
 		frameCount++;
-		waitKey(1);
+		//imshow(outWin, outFrame);
 		//(remainingTime > 1) ? waitKey(int(remainingTime)) : waitKey(1);  //waitKey();
+		waitKey(1);
 	}
 	endAll();
 }
@@ -69,7 +70,7 @@ inline void VidCont::initWriter() {
 	if (!outVid.empty()) {
 		writer.release();
 		int codec = static_cast<int>(reader.get(CAP_PROP_FOURCC));
-		writer.open(outVid, codec, fps, getSize(reader), true);
+		writer.open(outVid, codec, fps, Size(int(.35*getSize(reader).width), int(.35*getSize(reader).height)), true);
 		if (!writer.isOpened()) { cout << "Err opening " << outVid << ")\n"; writer.release(); CV_Assert(false); }
 		isWrInit = true;
 	}
