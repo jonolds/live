@@ -34,12 +34,12 @@ public:
 	deque<double> angleSumsDeq;
 	int y_offset, frCntAlg = 0, hThresh, minAngle, maxAngle;
 	int rows, cols;
-	double lowThr, highThr, minLen, maxGap, offsetFactor = .07;
+	double lowThr, highThr, minLen, maxGap, offsetFactor = .18;
 	Point topLPt, topMidLPt, topMidRPt, topRightPt, topMidPt, sideLPt, sideRPt, botLPt, botRPt;
 	Point nextTriLeft, nextTriRight;
 
 	~Alg() { cvDestroyAllWindows();}
-	Mat process(Mat inFrame);
+	Mat process(Mat);
 	void init(Mat inFrame);
 	void cannyHough();
 	Mat mask(Mat img, Scalar color);

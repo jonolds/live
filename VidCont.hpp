@@ -1,5 +1,5 @@
-#ifndef VIDCONT_H
-#define VIDCONT_H
+#ifndef VIDCONT_HPP
+#define VIDCONT_HPP
 #include <opencv2/opencv.hpp>
 #include <opencv2/videoio.hpp>
 #include "Alg.h"
@@ -40,7 +40,7 @@ inline VidCont::VidCont(string inVidPath = "", string outVidPath = "") {
 
 inline void VidCont::run() {
 	CV_Assert(isVidOpen);
-	Mat curFrame;
+	Mat curFrame, outFrame;
 	startWindowThread(); //namedWindow(outWin, WINDOW_AUTOSIZE);
 	initWriter();
 	while (true) {
@@ -52,7 +52,7 @@ inline void VidCont::run() {
 		if (!reader.read(curFrame))
 			break;
 		auto initialTime = getTickCount();
-		Mat outFrame = mod->process(curFrame);	
+		mod->process(curFrame);	
 		frameCount++;
 		if(!outVid.empty())
 			writer.write(outFrame);
@@ -61,7 +61,7 @@ inline void VidCont::run() {
 		frameCount++;
 		//imshow(outWin, outFrame);
 		//(remainingTime > 1) ? waitKey(int(remainingTime)) : waitKey(1);  //waitKey();
-		waitKey(1);
+		//waitKey(1);
 	}
 	endAll();
 }

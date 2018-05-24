@@ -7,7 +7,8 @@
 #include <numeric>
 #include "Alg.h"
 #include "colors.h"
-using namespace std; using namespace cv;
+using namespace std; 
+using namespace cv;
 
 
 inline void boxWrite(Mat& mat, String str, Point pt, Scalar boxCol);
@@ -107,9 +108,10 @@ inline Mat concatRow(Mat col1, Mat col2, Mat col3) {
 	return col1;
 }
 inline Mat concatCols(Mat row1, Mat row2, Mat row3) {
-	vconcat(row1, row2, row1);
-	vconcat(row1, row3, row1);
-	return row1;
+	//vconcat(row1, row2, row1);
+	//vconcat(row1, row3, row1);
+	vconcat(row2, row3, row2);
+	return row2;
 }
 
 

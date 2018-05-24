@@ -1,4 +1,5 @@
-#pragma once
+#ifndef COLORS_H
+#define COLORS_H
 #include <opencv2/opencv.hpp>
 
 using namespace std;
@@ -14,3 +15,4 @@ Scalar pink		=	Scalar(203, 192, 255);
 Scalar blue		=	Scalar(255, 0, 0);
 Scalar cyan		=	Scalar(255, 255, 0);
 Scalar gray		=	Scalar(64, 64, 64);
+#endif

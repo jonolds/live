@@ -5,7 +5,8 @@
 #include <numeric>
 #include "Alg.h"
 #include "helper.hpp"
-using namespace std; using namespace cv;
+using namespace std; 
+using namespace cv;
 
 struct LaneLine;
 
@@ -13,11 +14,12 @@ Mat Alg::process(Mat inFrame) {
 	vector<Vec4i> allLines;
 	init(inFrame);
 	cannyHough();
-
 	outFrame = drawLaneLines(gTop, rTop);
 	showImages();
-
 	rTop.clear(); gTop.clear();
+	//imshow("out", outFrame);
+	//if(waitKey(700) > 0)
+	//	waitKey();
 	return outFrame;
 }
 
@@ -41,14 +43,15 @@ void Alg::cannyHough() {
 	
 	//Mask
 	maskDispImg = mask(gr2col(cannyImg), yellow);
-	cannyMaskedImg = mask(cannyImg, black);
+	cannyMaskedImg = mask(col2gr(maskDispImg), black);
 
 	//Hough
 	vector<Vec4i> lines;
 	hThresh = 15, minLen = 20, maxGap = 70;			//Hough settings
 	HoughLinesP(cannyMaskedImg, lines, 1, 1 * CV_PI / 180, hThresh, minLen, maxGap); //1st best{30, 20, 20}>{30,10,20}>{40, 20, 10}
-	linez(houghImg, lines, green);
+	//linez(houghImg, lines, green);
 
+	vector<Vec4i> badLines;
 	//Sort into gTop/rTop lines
 	for (const Vec4i& line : lines) {
 		double angle = getAngle(line);
@@ -56,7 +59,15 @@ void Alg::cannyHough() {
 			rTop.lines.emplace_back(line);
 		else if ((angle < 15) && (angle < 65) && (line[0] < topMidLPt.x) && (line[2] < topMidLPt.x))
 			gTop.lines.emplace_back(line);
+		else
+			badLines.push_back(line);
 	}
+	linez(houghImg, badLines, white);
+	linez(houghImg, gTop.lines, green);
+	linez(houghImg, rTop.lines, red);
+	badLines.clear();
+
+
 
 	//set aveFrLine for both lanes
 	setLinePts(rows, cols, gTop, rTop);
@@ -65,8 +76,8 @@ void Alg::cannyHough() {
 }
 Mat Alg::mask(Mat img, Scalar color) {
 	rectangle(img, Point(0, y_offset), Point(cols, 0), color, -1);
-	Point triangle[3] = { Point(int(.1*cols), rows), Point(int(.9*cols), rows), Point(int(.5*cols), y_offset) };
-	fillConvexPoly(img, triangle, 3, color);
+	Point rhombus[4] = { Point(int(.1*cols), rows), Point(int(.4*cols), y_offset), Point(int(.6*cols), y_offset), Point(int(.9*cols), rows) };
+	fillConvexPoly(img, rhombus, 4, color);
 	return img;
 }
 
@@ -103,6 +114,8 @@ void Alg::showImages() {
 	string labels[] = { "inSmall", "gray", "blur", "cannyImg", "maskDispImg", "cannyMaskedImg", "hough", "outFrame" };
 	cvtColAddLabel(m, labels);
 	Mat dispImg = concatCols(concatRow(m[0], m[1], m[2]), concatRow(m[3], m[4], m[5]), concatRow(m[6], m[7], grayMat(m[7])));
-	imshow("inSmall - grayImg - blurImg - edge - hough - outFrame", reSz(dispImg, .8));
-	waitKey(20);
+	namedWindow("views", WINDOW_KEEPRATIO);
+	imshow("views", dispImg);
+	if(waitKey(50) > 0)
+		waitKey();
 }
