@@ -44,11 +44,11 @@ inline void VidCont::run() {
 	startWindowThread(); //namedWindow(outWin, WINDOW_AUTOSIZE);
 	initWriter();
 	while (true) {
-		//if(reader.get(CAP_PROP_POS_FRAMES) == reader.get(CAP_PROP_FRAME_COUNT)) {
-		//	reader.set(CAP_PROP_POS_FRAMES, -1);
-		//	delete mod;
-		//	mod = new Alg();
-		//}
+		if(reader.get(CAP_PROP_POS_FRAMES) == reader.get(CAP_PROP_FRAME_COUNT)) {
+			reader.set(CAP_PROP_POS_FRAMES, -1);
+			delete mod;
+			mod = new Alg();
+		}
 		if (!reader.read(curFrame))
 			break;
 		auto initialTime = getTickCount();
