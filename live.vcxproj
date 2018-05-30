@@ -78,6 +78,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
+      <ShowIncludes>false</ShowIncludes>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -98,6 +99,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
+      <ShowIncludes>false</ShowIncludes>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -116,16 +118,23 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Alg.h" />
-    <ClInclude Include="basics.hpp" />
+    <ClInclude Include="basics.h" />
     <ClInclude Include="colors.h" />
-    <ClInclude Include="helper.hpp" />
-    <ClInclude Include="t7.hpp" />
-    <ClInclude Include="t7vec.hpp" />
-    <ClInclude Include="VidCont.hpp" />
+    <ClInclude Include="draw.h" />
+    <ClInclude Include="helper.h" />
+    <ClInclude Include="t7.h" />
+    <ClInclude Include="t7vec.h" />
+    <ClInclude Include="VidCont.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Alg.cpp" />
+    <ClCompile Include="basics.cpp" />
+    <ClCompile Include="draw.cpp" />
+    <ClCompile Include="helper.cpp" />
     <ClCompile Include="live.cpp" />
+    <ClCompile Include="t7.cpp" />
+    <ClCompile Include="t7vec.cpp" />
+    <ClCompile Include="VidCont.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ClassDiagram.cd" />

@@ -1,9 +1,8 @@
 #include <opencv2/opencv.hpp>
-#include <opencv2/core.hpp>
-#include <fstream>
-#include "VidCont.hpp"
+#include "VidCont.h"
+#include <string>
 
-using namespace std; 
+using namespace std;
 using namespace cv;
 
 int main() {

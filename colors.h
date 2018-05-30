@@ -1,6 +1,5 @@
 #ifndef COLORS_H
 #define COLORS_H
-#include <opencv2/opencv.hpp>
 #include <opencv2/core.hpp>
 
 using namespace std;
@@ -17,6 +16,6 @@ static Scalar blue		=	Scalar(255, 0, 0);
 static Scalar cyan		=	Scalar(255, 255, 0);
 static Scalar gray		=	Scalar(64, 64, 64);
 static Scalar brown		=	Scalar(19, 69, 139);
-//static Scalar tan		=	Scalar(140, 180, 210);
+static Scalar lghtGry	=	Scalar(204, 206, 206);
 
 #endif

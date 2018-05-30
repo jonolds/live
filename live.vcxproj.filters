@@ -15,25 +15,28 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="VidCont.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Alg.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="helper.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="colors.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="t7.hpp">
+    <ClInclude Include="basics.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="t7vec.hpp">
+    <ClInclude Include="t7.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="basics.hpp">
+    <ClInclude Include="t7vec.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="VidCont.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="helper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="draw.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -42,6 +45,24 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Alg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="basics.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="t7.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="t7vec.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="VidCont.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="helper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="draw.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
