@@ -2,22 +2,22 @@
 #define VIDCONT_HPP
 #include <opencv2/opencv.hpp>
 #include <opencv2/videoio.hpp>
+#include <opencv2/core.hpp>
 #include "Alg.h"
-using namespace cv; 
+
 using namespace std;
+using namespace cv;
 
 class VidCont {
 public:
-	VideoCapture reader;		VideoWriter writer;
-	Alg* mod;
-	int fps = 25, frameCount = 0;
+	VideoCapture reader;	VideoWriter writer;		Alg* mod;
+	int fps = 10, frameCount = 0;
 	string outVid, outWin = "out";
 	bool isVidOpen = false, isWrInit = false;
 	//VidCont member functions
-	VidCont(string inVidPath, string outVidPath);		~VidCont();
-	void initWriter(), endAll(), run();
+	VidCont(string inVidPath, string outVidPath);	~VidCont();
+	void initWriter(), endAll(), run(), setSize(VideoCapture reader, Size reqSize);
 	Size getSize(VideoCapture vc);
-	void setSize(VideoCapture reader, Size reqSize);
 };
 
 inline VidCont::VidCont(string inVidPath = "", string outVidPath = "") {
@@ -27,7 +27,7 @@ inline VidCont::VidCont(string inVidPath = "", string outVidPath = "") {
 	if (!inVidPath.empty()) {
 		reader.open(inVidPath);
 		if (!reader.isOpened()) { cout << "Bad file read\n"; reader.release(); CV_Assert(false); }
-		fps = int(reader.get(CAP_PROP_FPS));
+		//fps = int(reader.get(CAP_PROP_FPS));
 	}
 	else {
 		reader.open(0);
@@ -51,17 +51,15 @@ inline void VidCont::run() {
 		}
 		if (!reader.read(curFrame))
 			break;
-		auto initialTime = getTickCount();
+		auto initial = getTickCount();
 		mod->process(curFrame);	
 		frameCount++;
 		if(!outVid.empty())
 			writer.write(outFrame);
-		double elapsedTime = (getTickCount() - initialTime) / (1000 * getTickFrequency());
-		double remainingTime = (1000 / fps) - (elapsedTime); //prevents early proc of next frame
+		double elapsed = (getTickCount() - initial) / (1000 * getTickFrequency());
+		int remaining = int(double(1000/fps) - elapsed);
 		frameCount++;
-		//imshow(outWin, outFrame);
-		//(remainingTime > 1) ? waitKey(int(remainingTime)) : waitKey(1);  //waitKey();
-		//waitKey(1);
+		//imshow(outWin, outFrame); (remaining > 1) ? waitKey(remaining) : waitKey(1);
 	}
 	endAll();
 }

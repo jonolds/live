@@ -118,11 +118,15 @@
     <ClInclude Include="Alg.h" />
     <ClInclude Include="colors.h" />
     <ClInclude Include="helper.hpp" />
+    <ClInclude Include="t7ln.hpp" />
     <ClInclude Include="VidCont.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Alg.cpp" />
     <ClCompile Include="live.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ClassDiagram.cd" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
