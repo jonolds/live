@@ -27,7 +27,7 @@
     <ClInclude Include="colors.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="t7ln.hpp">
+    <ClInclude Include="t7i.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

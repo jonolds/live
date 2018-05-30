@@ -15,31 +15,29 @@ using namespace cv;
 void boxWrite(Mat& mat, String str, Point pt, Scalar boxCol);
 Mat catCols(Mat row1, Mat row2, Mat row3);
 Mat catRows(Mat col1, Mat col2, Mat col3);
-void dotLn(Mat& mat, t7ln t, Scalar color, int y_off = 0, int thickness = 1);
-void dotLns(Mat& mat, vector<t7ln> tVec, Scalar color, int y_off = 0, int thickness = 1);
+void dotLn(Mat& mat, t7i t, Scalar color, int y_off = 0, int thickness = 1);
+void dotLns(Mat& mat, vecT7 tVec, Scalar color, int y_off = 0, int thickness = 1);
 void dot(Mat& mat, Point p, Scalar color, int radius);
 void dots(Mat& mat, vector<Point> pts, Scalar color, int radius);
 Mat cvtCol2gr(Mat mat);
-void cvtColLbl(vector<Mat>& vec, string* labels);
+void label(vector<Mat>& vec, string* labels);
 Mat cvtGr2col(Mat mat);
 string decStr(double num);
-void drawArrow(Mat& out, double ang);
+void drawArrow(Mat& out, bool neg);
 void drawLineByIter(Mat& img, Point a, Point b, Scalar color);
-t7ln getAvLn(vector<t7ln> tVec);
-Vec4i getCVfitline(vector<Vec4i> lines);
-Point getIntrsct(t7ln a, t7ln b);
+t7i getAvLn(vecT7 tVec);
+t7i getCVfitline(vecT7 lines);
 Mat getSolidImg(Mat img, Scalar color);
-Mat getVanImg(Mat img, t7ln gAve, t7ln rAve);
-void ln(Mat& mat, t7ln t, Scalar color, int thickness = 1, int offset = 0);
-void lns(Mat& mat, vector<t7ln> tVec, Scalar color, int thickness = 1, int offset = 0);
-Vec4i pt2vec(Point a, Point b);
+Mat getVanImg(Mat img, t7i gAve, t7i rAve);
+void ln(Mat& mat, t7i t, Scalar color, int thickness = 1, int offset = 0);
+void lns(Mat& mat, vecT7 tVec, Scalar color, int thickness = 1, int offset = 0);
 Mat reSz(Mat imgIn, double factor);
 
 Mat superBlur(Mat img);
 Mat canny(Mat blrImg, double lowThrsh, double highThrsh);
 Mat mask(Mat cnnyImg, Scalar color, int y_offset, int rows, int cols);
 void sortHoughLines(Alg& alg);
-Mat drawHoughLines(Mat img, vector<t7ln> gLns, vector<t7ln> rLns, vector<t7ln> badLns, int yOff);
+Mat drawHoughLines(Mat img, vecT7 gLns, vecT7 rLns, vecT7 badLns, int yOff);
 /**************************************************************************/
 
 inline void boxWrite(Mat& mat, String str, Point pt, Scalar boxCol = black) {
@@ -58,13 +56,13 @@ inline Mat catRows(Mat col1, Mat col2, Mat col3) {
 	hconcat(col1, col3, col1);
 	return col1;
 }
-inline void dotLn(Mat& mat, t7ln t, Scalar color, int y_off, int thickness) {
+inline void dotLn(Mat& mat, t7i t, Scalar color, int y_off, int thickness) {
 	line(mat, Point(t[0], t[1] + y_off), Point(t[2], t[3] + y_off), color, thickness);
-	dot(mat, t.getP1(), color, thickness + 2);
-	dot(mat, t.getP2(), color, thickness + 2);
+	dot(mat, t.p1(), color, thickness + 2);
+	dot(mat, t.p2(), color, thickness + 2);
 }
-inline void dotLns(Mat& mat, vector<t7ln> tVec, Scalar color, int y_off, int thickness) {
-	for (const t7ln& z : tVec)
+inline void dotLns(Mat& mat, vecT7 tVec, Scalar color, int y_off, int thickness) {
+	for (const t7i& z : tVec)
 		dotLn(mat, z, color, thickness, y_off);
 }
 inline void dot(Mat& mat, Point p, Scalar color, int radius = 3) {
@@ -75,11 +73,10 @@ inline void dots(Mat& mat, vector<Point> pts, Scalar color, int radius = 3) {
 		circle(mat, z, radius, color, -1, 8);
 }
 inline Mat cvtCol2gr(Mat mat) {
-	Mat gr;
-	cvtColor(mat, gr, COLOR_BGR2GRAY);
-	return gr;
+	cvtColor(mat, mat, COLOR_BGR2GRAY);
+	return mat;
 }
-inline void cvtColLbl(vector<Mat>& vec, string* labels) {
+inline void label(vector<Mat>& vec, string* labels) {
 	for (int i = 0; i < vec.size(); i++) {
 		if (vec[i].type() == 0)
 			cvtColor(vec[i], vec[i], COLOR_GRAY2BGR);
@@ -89,18 +86,17 @@ inline void cvtColLbl(vector<Mat>& vec, string* labels) {
 	}
 }
 inline Mat cvtGr2col(Mat mat) {
-	Mat col;
-	cvtColor(mat, col, COLOR_GRAY2BGR);
-	return col;
+	cvtColor(mat, mat, COLOR_GRAY2BGR);
+	return mat;
 }
 inline string decStr(double num) {
 	ostringstream obj;
 	obj << ((abs(num) < 1) ? setprecision(2) : ((abs(num) < 10)? setprecision(3) : setprecision(4))) << num;
 	return obj.str();
 }
-inline void drawArrow(Mat& out, double ang) {
-	arrowedLine(out, Point((ang<0) ? 60 : out.cols - 60, 15), Point((ang<0) ? 20 : out.cols - 20, 15), black, 7, FILLED, 0, 0.25);
-	arrowedLine(out, Point((ang<0) ? 60 : out.cols - 60, 15), Point((ang<0) ? 20 : out.cols - 20, 15), green, 2, FILLED, 0, 0.25);
+inline void drawArrow(Mat& out, bool neg) {
+	arrowedLine(out, Point((neg) ? 60 : out.cols - 60, 15), Point((neg) ? 20 : out.cols - 20, 15), black, 7, FILLED, 0, 0.25);
+	arrowedLine(out, Point((neg) ? 60 : out.cols - 60, 15), Point((neg) ? 20 : out.cols - 20, 15), green, 2, FILLED, 0, 0.25);
 }
 inline void drawLineByIter(Mat& img, Point a, Point b, Scalar color) {
 	LineIterator lit(img, a, b);
@@ -110,55 +106,41 @@ inline void drawLineByIter(Mat& img, Point a, Point b, Scalar color) {
 	}	
 }
 
-inline t7ln getAvLn(vector<t7ln> tVec) {
-	Vec4i tmp(0, 0, 0, 0);
-	for(t7ln t : tVec)
-		tmp += t.v4;
-	tmp /= (int)tVec.size();
-	return t7ln(tmp);
+inline t7i getAvLn(vecT7 tVec) {
+	return std::accumulate(tVec.begin(), tVec.end(), t7i(0, 0, 0, 0)) / int(tVec.size());
 }
-inline Vec4i getCVfitline(vector<Vec4i> lines) {
-	Vec4i fitline;
+inline t7i getCVfitline(vecT7 lines) {
+	t7i fitline;
 	vector<Point> ptVec;
-	for (Vec4i z : lines)
+	for (t7i z : lines)
 		ptVec.emplace_back(Point(z[0], z[1])), ptVec.emplace_back(Point(z[2], z[3]));
 	fitLine(ptVec, fitline, 2, 0, 0.1, 0.1);
 	return fitline;
 }
-inline Point getIntrsct(t7ln a, t7ln b) {
-	return a.intersectPt(b);
-}
 
-inline double getSlp(Point p1, Point p2) {
-	return (p2.x - p1.x != 0) ? double(p2.y - p1.y) / double(p2.x - p1.x) : 999.0;
-}
 inline Mat getSolidImg(Mat img, Scalar color) {
 	return Mat(img.size(), img.type(), color);
 }
-inline Mat getVanImg(Mat img, t7ln gAve, t7ln rAve) {
+inline Mat getVanImg(Mat img, t7i gAve, t7i rAve, Point vanish) {
 	Mat tmpGr = getSolidImg(img, black);
 	vconcat(tmpGr, img, tmpGr);
-	Point vanish = getIntrsct(gAve, rAve);
-	line(tmpGr, Point(gAve[2], gAve[3] + img.rows), Point(vanish.x, vanish.y + img.rows), white, 2);
+	line(tmpGr, Point(gAve[2], gAve[3] + img.rows), vanish + Point(0, img.rows), white, 2);
 	line(tmpGr, Point(rAve[0], rAve[1] + img.rows), Point(vanish.x, vanish.y + img.rows), white, 2);
 	circle(tmpGr, Point(vanish.x, vanish.y + img.rows), 3, blue, -1);
 	string s[] = { "vanish", " " };
 	vector<Mat> m = { tmpGr, getSolidImg(img, gray) };
-	cvtColLbl(m, s);
+	label(m, s);
 	vconcat(m[0], m[1], m[0]);
 	vconcat(Mat(Size(m[0].cols, 28), m[0].type(), gray), m[0], m[0]);
 	return m[0];
 }
 
-inline void ln(Mat& mat, t7ln t, Scalar color, int thickness, int offset) {
+inline void ln(Mat& mat, t7i t, Scalar color, int thickness, int offset) {
 	line(mat, Point(t[0], t[1] + offset), Point(t[2], t[3] + offset), color, thickness);
 }
-inline void lns(Mat& mat, vector<t7ln> tVec, Scalar color, int thickness, int offset) {
-	for (t7ln& z : tVec)
+inline void lns(Mat& mat, vecT7 tVec, Scalar color, int thickness, int offset) {
+	for (t7i& z : tVec)
 		line(mat, Point(z[0], z[1] + offset), Point(z[2], z[3] + offset), color, thickness);
-}
-inline Vec4i pt2vec(Point a, Point b) {
-	return Vec4i(a.x, a.y, b.x, b.y);
 }
 inline Mat reSz(Mat imgIn, double factor) {
 	Mat imgOut;
@@ -187,7 +169,7 @@ inline Mat mask(Mat cnnyImg, Scalar color, int y_offset, int rows, int cols) {
 	return mask;
 }
 inline void sortHoughLines(Alg& alg) {
-	for (t7ln& t : alg.lns) {
+	for (t7i& t : alg.lns) {
 		if ((t.ang > 15) && (t.ang < 65) && (t[0] > alg.topMidRPt.x) && (t[2] > alg.topMidRPt.x))
 			alg.rLns.emplace_back(t);
 		else if ((t.ang < 15) && (t.ang < 65) && (t[0] < alg.topMidLPt.x) && (t[2] < alg.topMidLPt.x))
@@ -196,13 +178,13 @@ inline void sortHoughLines(Alg& alg) {
 			alg.badLns.emplace_back(t);
 	}
 }
-inline Mat drawHoughLines(Mat img, vector<t7ln> gLns, vector<t7ln> rLns, vector<t7ln> badLns, int yOff) {
+inline Mat drawHoughLines(Mat img, vecT7 gLns, vecT7 rLns, vecT7 badLns, int yOff) {
 	Mat hImg = img.clone();
-	for (t7ln& t : gLns)
+	for (t7i& t : gLns)
 		line(hImg, Point(t[0], t[1] + yOff), Point(t[2], t[3] + yOff), green);
-	for (t7ln& t : rLns)
+	for (t7i& t : rLns)
 		line(hImg, Point(t[0], t[1] + yOff), Point(t[2], t[3] + yOff), red);
-	for (t7ln& t : badLns)
+	for (t7i& t : badLns)
 		line(hImg, Point(t[0], t[1] + yOff), Point(t[2], t[3] + yOff), white);
 	return hImg;
 }
