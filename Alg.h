@@ -23,7 +23,7 @@ class Alg {
 public:
 	Mat inSmall, grayImg, blurImg, canImg, maskImg, canMaskImg, houghImg, outFrm;
 	t7i gAve, rAve;
-	vecT7 lns, gLns, rLns, badLns;
+	vecT7 allLns, gLns, rLns, badLns;
 	deqD angleSumsDeq;
 	int yOff, frCntAlg = 0, hThresh = 15, minAngle, maxAngle, rows, cols;
 	double lowThr = 20, highThr = 50, minLen = 20, maxGap = 70, offsetFactor = .18;

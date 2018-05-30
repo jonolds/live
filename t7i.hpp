@@ -29,6 +29,7 @@ public:
 	Point ptAtX(int x);				Point ptAtY(int y);
 	int xAtY(int y);				int yAtX(int x);
 	int vanX(t7i ln2);				int vanY(t7i ln2);
+	vector<t7i> asVec();
 
 
 };
@@ -98,5 +99,11 @@ inline int t7i::xAtY(int y) {
 }
 inline int t7i::yAtX(int x) {
 	return int(m*x) + b;
+}
+
+inline vector<t7i> t7i::asVec() {
+
+	vector<t7i> vec = {t7i(val[0], val[1], val[2], val[3])};
+	return vec;
 }
 #endif
