@@ -27,7 +27,13 @@
     <ClInclude Include="colors.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="t7i.hpp">
+    <ClInclude Include="t7.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="t7vec.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="basics.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
