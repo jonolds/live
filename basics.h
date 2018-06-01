@@ -3,9 +3,10 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/core.hpp>
 #include "colors.h"
-
+typedef Point Pt;
 void boxWrite(Mat& mat, std::string str, Point pt, Scalar boxCol = black);
-Mat cat4(Mat img1, Mat img2, Mat img3, Mat img4);
+Mat cat2by2(Mat img1, Mat img2, Mat img3, Mat img4);
+Mat cat2by3(Mat img1, Mat img2, Mat img3, Mat img4, Mat img5, Mat img6);
 Mat catCols(Mat row1, Mat row2, Mat row3);
 Mat catRows(Mat col1, Mat col2, Mat col3);
 Mat cvtCol(Mat img);
