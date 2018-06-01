@@ -19,7 +19,7 @@ Mat Alg::process(Mat inFrame) {
 	blurImg = superBlur(grayImg.clone());				//2 blurImg
 	canImg = canny(blurImg.clone(), lowThr, highThr);	//3 canImg
 	mskAll(canImg.clone());								//4 mask
-	houghImg = getHough(mskFullBl, grid);							//6 houghImg
+	houghImg = getHough();							//6 houghImg
 	outFrm = getOutFrame(inSmall.clone());				//7 outFrm			
 	//showImages();
 	return cleanAndReturn();
@@ -56,11 +56,17 @@ Mat Alg::getMskInit(Mat cnImg, Scalar color) {
 	fillConvexPoly(cnImg, rhombus, 4, color);
 	return cnImg;
 }
-Mat Alg::getHough(Mat input, Mat& output) {
-	vVec4i tmp;
-	HoughLinesP(input, tmp, 1, CV_PI / 180, hThresh, minLen, maxGap);
-	for (const Vec4i& t : tmp)
+Mat Alg::getHough() {
+	vVec4i tmp1, tmp2, tmp3;
+	HoughLinesP(mskFullBl, tmp1, 1, CV_PI / 180, hThresh, minLen, maxGap);
+	HoughLinesP(mskHghBl, tmp2, 1, CV_PI / 180, hThresh, minLen, maxGap);
+	HoughLinesP(mskLwBl, tmp3, 1, CV_PI / 180, hThresh, minLen, maxGap);
+	for (const Vec4i& t : tmp1)
 		allLns.emplace_back(t7(t));
+	for (const Vec4i& t : tmp2)
+		allLnsTop.emplace_back(t7(t));
+	for (const Vec4i& t : tmp3)
+		allLnsBot.emplace_back(t7(t));
 	sortHoughLines(*this);
 	return drawHoughLines(inSmall.clone(), grLnsBot, rLnsBot, badLns);
 }
@@ -106,12 +112,15 @@ void Alg::showImages() {
 	waitKey(1);
 }
 Mat Alg::cleanAndReturn() {
-	allLns.clear();
-	grLnsBot.clear();
-	rLnsBot.clear();
-	badLns.clear();
+	allLns.clear(); allLnsTop.clear(); allLnsBot.clear();
+	grLns.clear();  grLnsTop.clear(); grLnsBot.clear();
+	rLns.clear(); rLnsTop.clear(); rLnsBot.clear();
+	badLns.clear(); badLnsTop.clear(); badLnsBot.clear();
 	return outFrm;
 }
 Alg::Alg() {
-	allLns = t7vec(brown), grLnsBot = t7vec(green), rLnsBot = t7vec(red), badLns = t7vec(white);
+	allLns = t7vec(brown), allLnsTop = t7vec(brown), allLnsTop = t7vec(brown);
+	grLns = t7vec(green), grLnsTop = t7vec(yellow), grLnsBot = t7vec(orange);
+	rLns = t7vec(red), rLnsTop = t7vec(yellow), rLnsBot = t7vec(orange);
+	badLns = t7vec(white), badLnsTop = t7vec(white), badLnsBot = t7vec(white);
 }

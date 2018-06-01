@@ -40,7 +40,7 @@ public:
 	cv::Mat getMskHgh(cv::Mat cnImg, cv::Scalar color);
 	cv::Mat getMskLw(cv::Mat cnImg, cv::Scalar color);
 	cv::Mat getMskInit(cv::Mat cnImg, cv::Scalar color);
-	cv::Mat getHough(cv::Mat input, cv::Mat& output);
+	cv::Mat getHough();
 	void sortHoughLines(Alg& alg);
 	
 	

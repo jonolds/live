@@ -17,5 +17,6 @@ static Scalar cyan		=	Scalar(255, 255, 0);
 static Scalar gray		=	Scalar(64, 64, 64);
 static Scalar brown		=	Scalar(19, 69, 139);
 static Scalar lghtGry	=	Scalar(204, 206, 206);
+static Scalar orange	=	Scalar(0, 102, 255);
 
 #endif
