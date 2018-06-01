@@ -15,34 +15,51 @@ Mat Alg::process(Mat inFrame) {
 	init(inFrame); //0 inSmall
 	vector<Mat> gp = makeGrid(inSmall.clone(), yOff);
 	side = gp[1]; grid = gp[0];
-	grayImg = cvtColGr(inSmall.clone()); //1 grayImg
+
+	grayImg = cvtGr(inSmall.clone()); //1 grayImg
 	blurImg = getBlur(grayImg.clone()); //2 blurImg
 	canImg = getCanny(blurImg.clone()); //3	canImg
-	 
-	maskHigh = getMaskHigh(cvtColGr(canImg.clone()), yellow, 180); //4	maskImg
-	canMaskHigh = getMaskHigh(cvtColGr(maskHigh.clone()), black, 180); //5	canMaskImg
-	maskLow = getMaskLow(cvtColGr(canImg.clone()), yellow, 105); //4	maskImg
-	canMaskLow = getMaskLow(cvtColGr(maskLow.clone()), black, 105); //5	canMaskImg
+
+	mskSplit(canImg.clone());
+
 	houghImg = getHough(); //6 houghImg
 	outFrm = getOutFrame(inSmall.clone()); //7 outFrm			
 	//showImages();
-	hconcat(canMaskHigh, canMaskLow, canMaskHigh); imshow("grid", canMaskHigh); waitKey();
 	//hconcat(side, grid, grid); imshow("grid", grid); waitKey();
 	//showImages();
 	return cleanAndReturn();
 }
-Mat Alg::getMaskHigh(Mat cnImg, Scalar color, int yLow) {
-	//return maskTop(cnImg, color, yOff, rows, cols);
+void Alg::mskSplit(Mat mskIn) {
+	Point rhombus[4] = { Point(int(.1 * cols), rows), Point(int(.4 * cols), yOff),
+		Point(int(.6 * cols), yOff), Point(int(.9 * cols), rows) };
+	
+	//mask offset/rhombus area
+	Mat mskInitYel = rectangleRet(cvtCol(mskIn.clone()), Point(0, yOff), Point(cols, 0), yellow);
+	fillConvexPoly(mskInitYel, rhombus, 4, yellow);
+	Mat mskInitBl = rectangleRet(mskIn.clone(), Point(0, yOff), Point(cols, 0), black);
+	fillConvexPoly(mskInitBl, rhombus, 4, black);
+
+	//mask high area
+	Mat mskHghYel = rectangleRet(mskInitYel, Point(0, 85), Point(cols, yOff), yellow);
+	mskHghBl = rectangleRet(mskInitBl, Point(0, 85), Point(cols, yOff), black);
+
+	//mask low area
+	Mat mskLwYel = rectangleRet(mskInitYel, Point(0, rows), Point(cols, 150), yellow);
+	mskLwBl = rectangleRet(mskInitBl, Point(0, rows), Point(cols, 150), black);
+
+	mskHghYel = catCols(mskLwBl, mskHghBl, mskLwBl);
+	vconcat(mskHghYel, cvtCol(mskHghBl), mskHghYel);
+	imshow("grid", mskHghYel); waitKey();
+}
+Mat Alg::getMskHgh(Mat cnImg, Scalar color, int yLow) {
 	rectangle(cnImg, Point(0, yOff), Point(cols, 0), color, -1);
 	rectangle(cnImg, Point(0, rows), Point(cols, yLow), color, -1);
 	Point rhombus[4] = { Point(int(.1 * cols), rows), Point(int(.4 * cols), yOff), Point(int(.6 * cols), yOff), Point(int(.9 * cols), rows) };
 	fillConvexPoly(cnImg, rhombus, 4, color);
-	return cnImg;
+	return cnImg; 
 }
-Mat Alg::getMaskLow(Mat cnImg, Scalar color, int yLow) {
-	//return maskTop(cnImg, color, yOff, rows, cols);
+Mat Alg::getMskLw(Mat cnImg, Scalar color, int yLow) {
 	rectangle(cnImg, Point(0, yLow), Point(cols, 0), color, -1);
-	//rectangle(cnImg, Point(0, rows), Point(cols, yLow), color, -1);
 	Point rhombus[4] = { Point(int(.1 * cols), rows), Point(int(.4 * cols), yOff), Point(int(.6 * cols), yOff), Point(int(.9 * cols), rows) };
 	fillConvexPoly(cnImg, rhombus, 4, color);
 	return cnImg;
@@ -52,6 +69,25 @@ Mat maskTop(Mat mask, Scalar color, int y_offset, int rows, int cols) {
 	Point rhombus[4] = { Point(int(.1 * cols), rows), Point(int(.4 * cols), y_offset), Point(int(.6 * cols), y_offset), Point(int(.9 * cols), rows) };
 	fillConvexPoly(mask, rhombus, 4, color);
 	return mask;
+}
+
+Mat Alg::getHough() {
+	vVec4i tmp;
+	HoughLinesP(cnMskImg, tmp, 1, CV_PI / 180, hThresh, minLen, maxGap);
+	for (const Vec4i& t : tmp)
+		allLns.emplace_back(t7(t));
+	sortHoughLines(*this);
+	return drawHoughLines(inSmall.clone(), gLns, rLns, badLns);
+}
+void Alg::sortHoughLines(Alg& alg) {
+	for (t7& t : alg.allLns) {
+		if ((t.ang > 15) && (t.ang < 65) && (t[0] > alg.topMidRPt.x) && (t[2] > alg.topMidRPt.x))
+			alg.rLns.emplace_back(t);
+		else if ((t.ang < 15) && (t.ang < 65) && (t[0] < alg.topMidLPt.x) && (t[2] < alg.topMidLPt.x))
+			alg.gLns.emplace_back(t);
+		else
+			alg.badLns.emplace_back(t);
+	}
 }
 void Alg::init(Mat inFrame) {
 	inSmall = reSz(inFrame, .35);
@@ -68,28 +104,6 @@ Mat Alg::getBlur(Mat grImg) {
 
 Mat Alg::getCanny(Mat blrImg) {
 	return canny(blrImg, lowThr, highThr);
-}
-
-
-
-Mat Alg::getHough() {
-	vVec4i tmp;
-	HoughLinesP(canMaskImg, tmp, 1, CV_PI / 180, hThresh, minLen, maxGap);
-	for (const Vec4i& t : tmp)
-		allLns.emplace_back(t7(t));
-	sortHoughLines(*this);
-	return drawHoughLines(inSmall.clone(), gLns, rLns, badLns);
-}
-
-void Alg::sortHoughLines(Alg& alg) {
-	for (t7& t : alg.allLns) {
-		if ((t.ang > 15) && (t.ang < 65) && (t[0] > alg.topMidRPt.x) && (t[2] > alg.topMidRPt.x))
-			alg.rLns.emplace_back(t);
-		else if ((t.ang < 15) && (t.ang < 65) && (t[0] < alg.topMidLPt.x) && (t[2] < alg.topMidLPt.x))
-			alg.gLns.emplace_back(t);
-		else
-			alg.badLns.emplace_back(t);
-	}
 }
 
 Mat Alg::getOutFrame(Mat img) {
@@ -116,8 +130,8 @@ void Alg::drawMarks(Mat& outMat) {
 }
 
 void Alg::showImages() {
-	vector<Mat> m = {inSmall, grayImg, blurImg, canImg, maskImg, canMaskImg, houghImg, outFrm};
-	string labels[] = {"inSmall", "gray", "blur", "canImg", "maskImg", "canMaskImg", "getHough", "outFrm"};
+	vector<Mat> m = {inSmall, grayImg, blurImg, canImg, maskImg, cnMskImg, houghImg, outFrm};
+	string labels[] = {"inSmall", "gray", "blur", "canImg", "maskImg", "cnMskImg", "getHough", "outFrm"};
 	label(m, labels);
 	Mat vanImg = getVanImg(outFrm, gAve, rAve, rAve.intrPt(gAve));
 	//Mat dispImg = catRows(catCols(m[3], m[4], m[5]), catCols(m[6], m[7], getSolidImg(m[7], gray)), vanImg);

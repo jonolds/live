@@ -22,17 +22,6 @@ Mat getVanImg(Mat img, t7 gAve, t7 rAve, Point vanish) {
 	return m[0];
 }
 
-
-
-
-
-//Mat maskTop(Mat mask, Scalar color, int y_offset, int rows, int cols) {
-//	rectangle(mask, Point(0, y_offset), Point(cols, 0), color, -1);
-//	Point rhombus[4] = {Point(int(.1 * cols), rows), Point(int(.4 * cols), y_offset), Point(int(.6 * cols), y_offset), Point(int(.9 * cols), rows)};
-//	fillConvexPoly(mask, rhombus, 4, color);
-//	return mask;
-//}
-
 Mat drawHoughLines(Mat img, t7vec gLns, t7vec rLns, t7vec badLns) {
 	gLns.drwVecLns(img);
 	rLns.drwVecLns(img);

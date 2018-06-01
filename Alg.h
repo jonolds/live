@@ -14,7 +14,9 @@ typedef vector<t7> t7vec2;
 class Alg
 {
 public:
-	cv::Mat inSmall, grayImg, blurImg, canImg, maskImg, maskHigh, maskLow, canMaskImg, canMaskHigh, canMaskLow, houghImg, outFrm, grid, side;
+	cv::Mat inSmall, grayImg, blurImg, canImg, maskImg;
+	cv::Mat mskHghBl, mskLwBl, cnMskImg;
+	cv::Mat houghImg, outFrm, grid, side;
 	t7 gAve, rAve;
 	t7vec allLns, gLns, rLns, badLns;
 	deqD angleSumsDeq;
@@ -28,10 +30,15 @@ public:
 	void init(cv::Mat inFrame);
 	cv::Mat getBlur(cv::Mat grImg);
 	cv::Mat getCanny(cv::Mat blrImg);
-	cv::Mat getMaskHigh(cv::Mat cnImg, cv::Scalar color, int yLow);
-	cv::Mat getMaskLow(cv::Mat cnImg, cv::Scalar color, int yLow);
+	
+	
+	void mskSplit(cv::Mat mskIn);
+	cv::Mat getMskHgh(cv::Mat cnImg, cv::Scalar color, int yLow);
+	cv::Mat getMskLw(cv::Mat cnImg, cv::Scalar color, int yLow);
 	cv::Mat getHough();
 	void sortHoughLines(Alg& alg);
+	
+	
 	cv::Mat getOutFrame(cv::Mat img);
 	void drawMarks(cv::Mat& outMat);
 	cv::Mat cleanAndReturn();
