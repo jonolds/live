@@ -15,7 +15,7 @@ class Alg
 {
 public:
 	cv::Mat inSmall, grayImg, blurImg, canImg, maskImg;
-	cv::Mat mskHghBl, mskLwBl, cnMskImg;
+	cv::Mat mskFull, mskHghBl, mskLwBl, cnMskImg;
 	cv::Mat houghImg, outFrm, grid, side;
 	t7 gAve, rAve;
 	t7vec allLns, gLns, rLns, badLns;
@@ -33,8 +33,9 @@ public:
 	
 	
 	void mskSplit(cv::Mat mskIn);
-	cv::Mat getMskHgh(cv::Mat cnImg, cv::Scalar color, int yLow);
-	cv::Mat getMskLw(cv::Mat cnImg, cv::Scalar color, int yLow);
+	cv::Mat getMskHgh(cv::Mat cnImg, cv::Scalar color);
+	cv::Mat getMskLw(cv::Mat cnImg, cv::Scalar color);
+	cv::Mat getMskInit(cv::Mat cnImg, cv::Scalar color);
 	cv::Mat getHough();
 	void sortHoughLines(Alg& alg);
 	

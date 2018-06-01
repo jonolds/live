@@ -7,7 +7,6 @@
 #include "colors.h"
 #include "t7vec.h"
 #include "draw.h"
-
 using namespace std;
 using namespace cv;
 
@@ -19,58 +18,45 @@ Mat Alg::process(Mat inFrame) {
 	grayImg = cvtGr(inSmall.clone()); //1 grayImg
 	blurImg = getBlur(grayImg.clone()); //2 blurImg
 	canImg = getCanny(blurImg.clone()); //3	canImg
-
 	mskSplit(canImg.clone());
-
 	houghImg = getHough(); //6 houghImg
 	outFrm = getOutFrame(inSmall.clone()); //7 outFrm			
-	//showImages();
-	//hconcat(side, grid, grid); imshow("grid", grid); waitKey();
 	//showImages();
 	return cleanAndReturn();
 }
 void Alg::mskSplit(Mat mskIn) {
-	Point rhombus[4] = { Point(int(.1 * cols), rows), Point(int(.4 * cols), yOff),
-		Point(int(.6 * cols), yOff), Point(int(.9 * cols), rows) };
-	
-	//mask offset/rhombus area
-	Mat mskInitYel = rectangleRet(cvtCol(mskIn.clone()), Point(0, yOff), Point(cols, 0), yellow);
-	fillConvexPoly(mskInitYel, rhombus, 4, yellow);
-	Mat mskInitBl = rectangleRet(mskIn.clone(), Point(0, yOff), Point(cols, 0), black);
-	fillConvexPoly(mskInitBl, rhombus, 4, black);
-
+	Mat mskInitYel = getMskInit(mskIn.clone(), yellow);
+	Mat mskInitBl = getMskInit(mskIn.clone(), black);
+	mskFull = getMskInit(mskIn.clone(), black);
 	//mask high area
-	Mat mskHghYel = rectangleRet(mskInitYel, Point(0, 85), Point(cols, yOff), yellow);
-	mskHghBl = rectangleRet(mskInitBl, Point(0, 85), Point(cols, yOff), black);
-
+	Mat mskHghYel = getMskHgh(mskInitYel, yellow);
+	mskHghBl = getMskHgh(mskInitBl, black);
 	//mask low area
 	Mat mskLwYel = rectangleRet(mskInitYel, Point(0, rows), Point(cols, 150), yellow);
 	mskLwBl = rectangleRet(mskInitBl, Point(0, rows), Point(cols, 150), black);
 
-	mskHghYel = catCols(mskLwBl, mskHghBl, mskLwBl);
-	vconcat(mskHghYel, cvtCol(mskHghBl), mskHghYel);
-	imshow("grid", mskHghYel); waitKey();
+	Mat group = cat4(mskLwBl, mskLwYel, mskHghBl, mskHghYel);
+	show(group);
 }
-Mat Alg::getMskHgh(Mat cnImg, Scalar color, int yLow) {
-	rectangle(cnImg, Point(0, yOff), Point(cols, 0), color, -1);
-	rectangle(cnImg, Point(0, rows), Point(cols, yLow), color, -1);
-	Point rhombus[4] = { Point(int(.1 * cols), rows), Point(int(.4 * cols), yOff), Point(int(.6 * cols), yOff), Point(int(.9 * cols), rows) };
-	fillConvexPoly(cnImg, rhombus, 4, color);
-	return cnImg; 
+Mat Alg::getMskHgh(Mat cnImg, Scalar color) {
+	if(color != black)
+		cnImg = cvtCol(cnImg);
+	return rectangleRet(cnImg, Point(0, 85), Point(cols, yOff), color);
 }
-Mat Alg::getMskLw(Mat cnImg, Scalar color, int yLow) {
-	rectangle(cnImg, Point(0, yLow), Point(cols, 0), color, -1);
-	Point rhombus[4] = { Point(int(.1 * cols), rows), Point(int(.4 * cols), yOff), Point(int(.6 * cols), yOff), Point(int(.9 * cols), rows) };
-	fillConvexPoly(cnImg, rhombus, 4, color);
+Mat Alg::getMskLw(Mat cnImg, Scalar color) {
+	if (color != black)
+		cnImg = cvtCol(cnImg);
+	return rectangleRet(cnImg, Point(0, rows), Point(cols, 150), color);
+}
+Mat Alg::getMskInit(Mat cnImg, Scalar color) {
+	Point rhombus[4] = { Point(int(.1 * cols), rows), Point(int(.4 * cols), yOff),
+		Point(int(.6 * cols), yOff), Point(int(.9 * cols), rows) };
+	if (color != black)
+		cnImg = cvtCol(cnImg);
+	cnImg = rectangleRet(cnImg, Point(0, yOff), Point(cols, 0), color);
+	fillConvexPoly(cnImg, rhombus, 4, yellow);
 	return cnImg;
 }
-Mat maskTop(Mat mask, Scalar color, int y_offset, int rows, int cols) {
-	rectangle(mask, Point(0, y_offset), Point(cols, 0), color, -1);
-	Point rhombus[4] = { Point(int(.1 * cols), rows), Point(int(.4 * cols), y_offset), Point(int(.6 * cols), y_offset), Point(int(.9 * cols), rows) };
-	fillConvexPoly(mask, rhombus, 4, color);
-	return mask;
-}
-
 Mat Alg::getHough() {
 	vVec4i tmp;
 	HoughLinesP(cnMskImg, tmp, 1, CV_PI / 180, hThresh, minLen, maxGap);
@@ -89,23 +75,6 @@ void Alg::sortHoughLines(Alg& alg) {
 			alg.badLns.emplace_back(t);
 	}
 }
-void Alg::init(Mat inFrame) {
-	inSmall = reSz(inFrame, .35);
-	houghImg = inSmall.clone();
-	outFrm = inSmall.clone();
-	rows = inSmall.rows;
-	cols = inSmall.cols;
-	yOff = int(offsetFactor * rows);
-}
-
-Mat Alg::getBlur(Mat grImg) {
-	return superBlur(grImg);
-}
-
-Mat Alg::getCanny(Mat blrImg) {
-	return canny(blrImg, lowThr, highThr);
-}
-
 Mat Alg::getOutFrame(Mat img) {
 	rAve = rLns.drwAv(img);
 	gAve = gLns.drwAv(img);
@@ -116,7 +85,6 @@ Mat Alg::getOutFrame(Mat img) {
 	drawArrow(img, true);
 	return img;
 }
-
 void Alg::drawMarks(Mat& outMat) {
 	ln(outMat, t7(0, yOff, cols, yOff), pink);
 	vector<Point> yelPts = {
@@ -128,7 +96,20 @@ void Alg::drawMarks(Mat& outMat) {
 	};
 	for (const Point& p : yelPts) dot(outMat, p, yellow);
 }
-
+void Alg::init(Mat inFrame) {
+	inSmall = reSz(inFrame, .35);
+	houghImg = inSmall.clone();
+	outFrm = inSmall.clone();
+	rows = inSmall.rows;
+	cols = inSmall.cols;
+	yOff = int(offsetFactor * rows);
+}
+Mat Alg::getBlur(Mat grImg) {
+	return superBlur(grImg);
+}
+Mat Alg::getCanny(Mat blrImg) {
+	return canny(blrImg, lowThr, highThr);
+}
 void Alg::showImages() {
 	vector<Mat> m = {inSmall, grayImg, blurImg, canImg, maskImg, cnMskImg, houghImg, outFrm};
 	string labels[] = {"inSmall", "gray", "blur", "canImg", "maskImg", "cnMskImg", "getHough", "outFrm"};
@@ -139,7 +120,6 @@ void Alg::showImages() {
 	imshow("views", reSz(dispImg, .8));
 	waitKey(1);
 }
-
 Mat Alg::cleanAndReturn() {
 	allLns.clear();
 	gLns.clear();
@@ -147,7 +127,6 @@ Mat Alg::cleanAndReturn() {
 	badLns.clear();
 	return outFrm;
 }
-
 Alg::Alg() {
 	allLns = t7vec(brown), gLns = t7vec(green), rLns = t7vec(red), badLns = t7vec(white);
 }

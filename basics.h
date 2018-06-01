@@ -5,6 +5,7 @@
 #include "colors.h"
 
 void boxWrite(Mat& mat, std::string str, Point pt, Scalar boxCol = black);
+Mat cat4(Mat img1, Mat img2, Mat img3, Mat img4);
 Mat catCols(Mat row1, Mat row2, Mat row3);
 Mat catRows(Mat col1, Mat col2, Mat col3);
 Mat cvtCol(Mat img);

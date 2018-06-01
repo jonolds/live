@@ -17,6 +17,18 @@ Mat catCols(Mat row1, Mat row2, Mat row3) {
 	vconcat(row1, row3, row1);
 	return row1;
 }
+Mat cat4(Mat img1, Mat img2, Mat img3, Mat img4) {
+	img1 = cvtCol(img1); img2 = cvtCol(img2); img3 = cvtCol(img3); img4 = cvtCol(img4);
+	Mat vDiv = Mat(Size(3, img1.rows), img1.type(), blue);
+	hconcat(img1, vDiv, img1);
+	hconcat(img1, img2, img1);
+	hconcat(img3, vDiv, img3);
+	hconcat(img3, img4, img3);
+	Mat hDiv = Mat(Size(img1.cols, 3), img1.type(), blue);
+	vconcat(img1, hDiv, img1);
+	vconcat(img1, img3, img1);
+	return img1;
+}
 
 Mat catRows(Mat col1, Mat col2, Mat col3) {
 	col1 = cvtCol(col1); col2 = cvtCol(col2); col3 = cvtCol(col3);
@@ -26,7 +38,7 @@ Mat catRows(Mat col1, Mat col2, Mat col3) {
 }
 
 Mat cvtCol(Mat img) {
-	if(img.type() == 0)
+	if(img.type() != 16)
 		cvtColor(img, img, COLOR_GRAY2BGR);
 	return img;
 }
