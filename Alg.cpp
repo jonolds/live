@@ -11,9 +11,8 @@ using namespace cv;
 
 Mat Alg::process(Mat inFrame) {
 	init(inFrame); //0 inSmall
-	vector<Mat> gp = makeGrid(inSmall.clone(), yOff);
-	side = gp[1]; grid = gp[0];
-
+	//vector<Mat> gp = makeGrid(inSmall.clone(), yOff);
+	//side = gp[1]; grid = gp[0];
 	grayImg = cvtGr(inSmall.clone());					//1 grayImg
 	blurImg = superBlur(grayImg.clone());				//2 blurImg
 	canImg = canny(blurImg.clone(), lowThr, highThr);	//3 canImg
@@ -33,15 +32,11 @@ void Alg::init(Mat inFrame) {
 void Alg::mskAll(Mat mskIn) {
 	Pt hghMskPt1 = Pt(0, 85), hghMskPt2 = Pt(cols, yOff), lwMskPt1 = Pt(0, rows), lwMskPt2 = Pt(cols, int(.5*rows));
 	mskFullBl = getMsk(mskIn, black);
-
 	mskHghBl = getMsk(mskIn, black, hghMskPt1, hghMskPt2);		
 	mskLwBl = getMsk(mskIn, black, lwMskPt1, lwMskPt2);
 	mskFullYel = getMsk(mskIn, yellow);
 	mskHghYel = getMsk(mskIn, yellow, hghMskPt1, hghMskPt2);
 	mskLwYel = getMsk(mskIn, yellow, lwMskPt1, lwMskPt2);
-	
-	/*Mat group = cat2by3(mskFullBl, mskFullYel, mskLwBl, mskLwYel, mskHghBl, mskHghYel);
-	show(group);*/
 }
 Mat Alg::getMsk(Mat cnImg, Scalar color, Pt p1, Pt p2) {
 	Pt rhombus[4] = { Pt(int(.1 * cols), rows), Pt(int(.4 * cols), yOff),
@@ -54,21 +49,15 @@ Mat Alg::getMsk(Mat cnImg, Scalar color, Pt p1, Pt p2) {
 }
 Mat Alg::getHough() {
 	vVec4i tmp1, tmp2, tmp3;
-	HoughLinesP(mskFullBl, tmp1, .3, CV_PI / 720, hThresh, minLen, maxGap);
-	HoughLinesP(mskHghBl, tmp2, .3, CV_PI / 720, hThresh, minLen, maxGap);
-	HoughLinesP(mskLwBl, tmp3, .3, CV_PI / 720, hThresh, minLen, maxGap);
-	for (const Vec4i& t : tmp1)
-		allLns.emplace_back(t7(t));
-	for (const Vec4i& t : tmp2)
-		allLnsTop.emplace_back(t7(t));
-	for (const Vec4i& t : tmp3)
-		allLnsBot.emplace_back(t7(t));
+	allLns = HoughLinesP_t7vec(mskFullBl, .3, CV_PI / 720, hThresh, minLen, maxGap);
+	allLnsTop = HoughLinesP_t7vec(mskHghBl, .3, CV_PI / 720, hThresh, minLen, maxGap);
+	allLnsBot = HoughLinesP_t7vec(mskLwBl, .3, CV_PI / 720, hThresh, minLen, maxGap);
 	sortHoughLines(allLns, rLns, grLns, badLns);
 	sortHoughLines(allLnsTop, rLnsTop, grLnsTop, badLnsTop);
 	sortHoughLines(allLnsBot, rLnsBot, grLnsBot, badLnsBot);
 	return drawHoughLines(inSmall.clone(), grLnsBot, rLnsBot, badLns);
 }
-void Alg::sortHoughLines(t7vec& allVec,  t7vec& rVec, t7vec& gVec, t7vec& bVec) {
+void Alg::sortHoughLines(t7vec allVec,  t7vec& rVec, t7vec& gVec, t7vec& bVec) {
 	for (t7& t : allVec) {
 		if ((t.ang > 15) && (t.ang < 85) && (t[0] > topMidRPt.x) && (t[2] > topMidRPt.x))
 			rVec.emplace_back(t);

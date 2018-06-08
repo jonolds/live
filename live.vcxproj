@@ -122,6 +122,7 @@
     <ClInclude Include="colors.h" />
     <ClInclude Include="draw.h" />
     <ClInclude Include="helper.h" />
+    <ClInclude Include="sector.h" />
     <ClInclude Include="t7.h" />
     <ClInclude Include="t7vec.h" />
     <ClInclude Include="VidCont.h" />

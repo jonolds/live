@@ -36,7 +36,7 @@ public:
 	void mskAll(cv::Mat mskIn);
 	cv::Mat getMsk(cv::Mat cnImg, cv::Scalar color, Pt p1 = Pt(0, 0), Pt p2 = Pt(0, 0));
 	cv::Mat getHough();
-	void sortHoughLines(t7vec& allVec, t7vec& rVec, t7vec& gVec, t7vec& bVec);
+	void sortHoughLines(t7vec allVec, t7vec& rVec, t7vec& gVec, t7vec& bVec);
 	
 	cv::Mat getOutFrame(cv::Mat img);
 	void drawMarks(cv::Mat& outMat);
