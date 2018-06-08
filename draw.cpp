@@ -40,7 +40,7 @@ vector<Mat> makeGrid(Mat img, int yOff) {
 	
 	Mat side(Size(cSpace, img.rows), img.type(), lghtGry);
 	for(int i = yOff; i < img.rows; i += rSpace) {
-		line(grd, Point(0, i), Point(roiW, i), black, 1);
+		line(grd, Point(0, i), Point((int)roiW, i), black, 1);
 		putText(side, to_string(i), Point(15, i), 4, .4, white);
 	}
 	for (int i = 0; i < img.cols; i += cSpace) {

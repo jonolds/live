@@ -5,8 +5,7 @@
 #include <opencv2/core.hpp>
 #include "Alg.h"
 
-class VidCont
-{
+class VidCont {
 public:
 	cv::VideoCapture reader;
 	cv::VideoWriter writer;

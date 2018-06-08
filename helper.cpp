@@ -23,13 +23,14 @@ Mat getVanImg(Mat img, t7 gAve, t7 rAve, Point vanish) {
 }
 
 Mat drawHoughLines(Mat img, t7vec gLns, t7vec rLns, t7vec badLns) {
-	gLns.drwVecLns(img);
-	rLns.drwVecLns(img);
-	badLns.drwVecLns(img);
+//	gLns.drawVecLns(img);
+	rLns.drawVecLns(img);
+	badLns.drawVecLns(img);
 	return img;
 }
 
 Mat superBlur(Mat img) {
+	blur(img, img, Size(5, 5));
 	blur(img, img, Size(5, 5));
 	GaussianBlur(img, img, Size(7, 7), 4);
 	GaussianBlur(img, img, Size(5, 7), 4);

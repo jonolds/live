@@ -4,8 +4,7 @@
 #include <vector>
 #include "t7.h"
 
-class t7vec : public vector<t7>
-{
+class t7vec : public std::vector<t7> {
 public:
 	t7vec() {}
 
@@ -14,8 +13,8 @@ public:
 	};
 	cv::Scalar col;
 	t7 avLn;
-	void drwVecLns(cv::Mat& img);
-	t7 drwAv(cv::Mat& img, int offset = 0);
+	void drawVecLns(cv::Mat& img);
+	t7 drawAvLn(cv::Mat& img, int offset = 0);
 	t7 getAvLn();
 };
 

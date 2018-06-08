@@ -6,7 +6,7 @@
 
 void dot(cv::Mat& mat, cv::Point p, cv::Scalar color, int radius = 3);
 void dotLns(cv::Mat& mat, t7vec tVec, cv::Scalar color, int y_off = 0, int thickness = 1);
-void label(vector<cv::Mat>& vec, string* labels);
+void label(std::vector<cv::Mat>& vec, std::string* labels);
 void ln(cv::Mat& mat, t7 t, cv::Scalar color, int thickness = 1, int offset = 0);
-vector<cv::Mat> makeGrid(cv::Mat img, int yOff);
+std::vector<cv::Mat> makeGrid(cv::Mat img, int yOff);
 #endif

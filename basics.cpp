@@ -5,7 +5,7 @@ using namespace std;
 using namespace cv;
 
 
-void boxWrite(Mat& mat, string str, Point pt, Scalar boxCol) {
+void boxWrite(Mat& mat, string str, Pt pt, Scalar boxCol) {
 	int bs = 0;
 	Size sz = getTextSize(str, 4, .5, 1, &bs);
 	rectangle(mat, Point(pt.x, pt.y + 2), Point(pt.x + sz.width, pt.y - sz.height - 1), boxCol, -1, 8);
@@ -87,7 +87,7 @@ void drawArrow(Mat& out, bool neg) {
 Mat getSolidImg(Mat img, Scalar color) {
 	return Mat(img.size(), img.type(), color);
 }
-Mat rectangleRet(Mat img, Point p1, Point p2, Scalar color, int thickness) {
+Mat rectangleRet(Mat img, Pt p1, Pt p2, Scalar color, int thickness) {
 	Mat img2 = img.clone();
 	rectangle(img2, p1, p2, color, thickness, 8, 0);
 	return img2;
