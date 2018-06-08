@@ -52,23 +52,6 @@ Mat Alg::getMsk(Mat cnImg, Scalar color, Pt p1, Pt p2) {
 	fillConvexPoly(cnImg, rhombus, 4, color);
 	return rectangleRet(cnImg, p1, p2, color);
 }
-//Mat Alg::getMskHgh(Mat cnImg, Scalar color) {
-//	cnImg = getMskInit(cnImg, color);
-//	return rectangleRet(cnImg, Pt(0, 85), Pt(cols, yOff), color);
-//}
-//Mat Alg::getMskLw(Mat cnImg, Scalar color) {
-//	cnImg = getMskInit(cnImg, color);
-//	return rectangleRet(cnImg, Pt(0, rows), Pt(cols, int(.5*rows)), color);
-//}
-//Mat Alg::getMskInit(Mat cnImg, Scalar color) {
-//	Pt rhombus[4] = { Pt(int(.1 * cols), rows), Pt(int(.4 * cols), yOff),
-//		Pt(int(.6 * cols), yOff), Pt(int(.9 * cols), rows) };
-//	if (color != black)
-//		cnImg = cvtCol(cnImg);
-//	cnImg = rectangleRet(cnImg, Pt(0, yOff), Pt(cols, 0), color);
-//	fillConvexPoly(cnImg, rhombus, 4, color);
-//	return cnImg;
-//}
 Mat Alg::getHough() {
 	vVec4i tmp1, tmp2, tmp3;
 	HoughLinesP(mskFullBl, tmp1, .3, CV_PI / 720, hThresh, minLen, maxGap);
