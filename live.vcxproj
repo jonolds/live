@@ -122,9 +122,8 @@
     <ClInclude Include="colors.h" />
     <ClInclude Include="draw.h" />
     <ClInclude Include="helper.h" />
-    <ClInclude Include="sector.h" />
+    <ClInclude Include="Sector.h" />
     <ClInclude Include="t7.h" />
-    <ClInclude Include="t7vec.h" />
     <ClInclude Include="VidCont.h" />
   </ItemGroup>
   <ItemGroup>
@@ -133,8 +132,8 @@
     <ClCompile Include="draw.cpp" />
     <ClCompile Include="helper.cpp" />
     <ClCompile Include="live.cpp" />
+    <ClCompile Include="Sector.cpp" />
     <ClCompile Include="t7.cpp" />
-    <ClCompile Include="t7vec.cpp" />
     <ClCompile Include="VidCont.cpp" />
   </ItemGroup>
   <ItemGroup>

@@ -8,8 +8,9 @@ void dot(Mat& mat, Point p, Scalar color, int radius) {
 	circle(mat, p, radius, color, -1, 8);
 }
 
-void dotLns(Mat& mat, t7vec tVec, Scalar color, int y_off, int thickness) {
-	for (t7 t : tVec) {
+void dotLns(Mat& mat, vector<t7> t7vec, Scalar color, int y_off, int thickness) {
+	for (int i = 0; i < t7vec.size(); i++) {
+		t7 t = t7vec.at(i);
 		line(mat, Point(t[0], t[1] + y_off), Point(t[2], t[3] + y_off), color, thickness);
 		dot(mat, t.p1(), color, thickness + 2);
 		dot(mat, t.p2(), color, thickness + 2);

@@ -1,10 +1,11 @@
-#ifndef BASICS_HPP
-#define BASICS_HPP
+#ifndef BASICS_H
+#define BASICS_H
 #include <opencv2/opencv.hpp>
 #include <opencv2/core.hpp>
 #include "colors.h"
+#include "t7.h"
 
-typedef cv::Point Pt;
+
 void boxWrite(cv::Mat& mat, std::string str, Pt pt, cv::Scalar boxCol = black);
 cv::Mat cat2by2(cv::Mat img1, cv::Mat img2, cv::Mat img3, cv::Mat img4);
 cv::Mat cat2by3(cv::Mat img1, cv::Mat img2, cv::Mat img3, cv::Mat img4, cv::Mat img5, cv::Mat img6);

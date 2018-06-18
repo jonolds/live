@@ -2,6 +2,8 @@
 #define T7_H
 #include <opencv2/opencv.hpp>
 
+typedef cv::Point Pt;
+
 class t7 : public cv::Vec4i {
 public:
 	double m, ang;
@@ -21,5 +23,4 @@ public:
 	int vanX(t7 ln2);
 	int vanY(t7 ln2);
 };
-
 #endif

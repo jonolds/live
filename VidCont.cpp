@@ -35,9 +35,10 @@ void VidCont::run() {
 	Mat curFrame, outFrame;
 	startWindowThread(); //namedWindow(outWin, WINDOW_AUTOSIZE);
 	initWriter();
+	reader.set(CAP_PROP_POS_FRAMES, 200);
 	while (true) {
 		if (reader.get(CAP_PROP_POS_FRAMES) == reader.get(CAP_PROP_FRAME_COUNT)) {
-			reader.set(CAP_PROP_POS_FRAMES, -1);
+			reader.set(CAP_PROP_POS_FRAMES, 200);
 			delete mod;
 			mod = new Alg();
 		}

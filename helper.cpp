@@ -6,16 +6,15 @@
 using namespace std;
 using namespace cv;
 
-
 Mat canny(Mat blrImg, double lowThrsh, double highThrsh) {
 	Canny(blrImg, blrImg, lowThrsh, highThrsh);
 	return blrImg;
 }
 
-Mat drawHoughLines(Mat img, t7vec gLns, t7vec rLns, t7vec badLns) {
+Mat drawHoughLines(Mat img, Sector gLns, Sector rLns, Sector badLns) {
 //	gLns.drawVecLns(img);
-	rLns.drawVecLns(img);
-	badLns.drawVecLns(img);
+//	rLns.drawVecLns(img);
+//	badLns.drawVecLns(img);
 	return img;
 }
 
@@ -33,16 +32,17 @@ Mat getVanImg(Mat img, t7 gAve, t7 rAve, Point vanish) {
 	return m[0];
 }
 
-t7vec HoughLinesP_t7vec(Mat mat, double rho, double theta, int threshold, double minLen, double maxGap) {
+Sector HoughLinesP_t7vec(Mat mat, double rho, double theta, int threshold, double minLen, double maxGap) {
 	vector<Vec4i> tmp;
-	t7vec tmp_t7vec;
+	Sector tmp_t7vec;
 	HoughLinesP(mat, tmp, rho, theta, threshold, minLen, maxGap);
-	for (const Vec4i& t : tmp)
-		tmp_t7vec.emplace_back(t7(t));
+	//for (const Vec4i& t : tmp)
+	//	tmp_t7vec.emplace_back(t7(t));
 	return tmp_t7vec;
 }
 
 Mat superBlur(Mat img) {
+
 	blur(img, img, Size(5, 5));
 	blur(img, img, Size(5, 5));
 	GaussianBlur(img, img, Size(7, 7), 4);

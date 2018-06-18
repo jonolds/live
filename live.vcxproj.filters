@@ -27,9 +27,6 @@
     <ClInclude Include="t7.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="t7vec.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="VidCont.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -39,7 +36,7 @@
     <ClInclude Include="draw.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="sector.h">
+    <ClInclude Include="Sector.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -56,9 +53,6 @@
     <ClCompile Include="t7.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="t7vec.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="VidCont.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -66,6 +60,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="draw.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Sector.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
