@@ -2,6 +2,7 @@
 #define COLORS_H
 #include <opencv2/core.hpp>
 
+
 static cv::Scalar magenta	=	cv::Scalar(255, 0, 255);
 static cv::Scalar black		=	cv::Scalar(0, 0, 0);
 static cv::Scalar green		=	cv::Scalar(0, 255, 0);

@@ -7,6 +7,8 @@
 
 class VidCont {
 public:
+	int totalFrames, currentFrame;
+	
 	cv::VideoCapture reader;
 	cv::VideoWriter writer;
 	Alg* mod;
@@ -18,5 +20,6 @@ public:
 	~VidCont();
 	void initWriter(), endAll(), run(), setSize(cv::VideoCapture reader, cv::Size reqSize);
 	cv::Size getSize(cv::VideoCapture vc);
+	void on_frame(int, void*);
 };
 #endif

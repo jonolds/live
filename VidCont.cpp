@@ -4,34 +4,41 @@
 using namespace std;
 using namespace cv;
 
+void VidCont::on_frame(int, void*) {
+	
+}
+
 VidCont::VidCont(std::string inVidPath, std::string outVidPath) {
-	outVid = outVidPath;
-	mod = new Alg();
-	reader.release();
-	if (!inVidPath.empty()) {
-		reader.open(inVidPath);
+	outVid = outVidPath;							//Save out video path
+	namedWindow("control", WINDOW_AUTOSIZE);		//create control window
+	mod = new Alg();								//create Alg
+	reader.release();								//Release reader in case it exists
+	
+	if (!inVidPath.empty()) {						//open file if one was defined
+		reader.open(inVidPath);	
 		if (!reader.isOpened()) {
 			cout << "Bad file read\n";
 			reader.release();
-			CV_Assert(false);
 		}
 		//fps = int(reader.get(CAP_PROP_FPS));
 	}
-	else {
+	
+	else {											//open camera if no file defined
 		reader.open(0);
 		if (!reader.isOpened()) {
 			cout << "Cam not open\n";
 			reader.release();
-			CV_Assert(false);
 		}
 		setSize(reader, Size(1280, 720));
 		reader.set(CAP_PROP_FPS, fps);
 	}
+	totalFrames = reader.get(CAP_PROP_FRAME_COUNT);
 	isVidOpen = true;
 }
 
 void VidCont::run() {
-	CV_Assert(isVidOpen);
+	
+	//sprintf(c_str(control), )
 	Mat curFrame, outFrame;
 	startWindowThread(); //namedWindow(outWin, WINDOW_AUTOSIZE);
 	initWriter();
@@ -42,9 +49,8 @@ void VidCont::run() {
 			delete mod;
 			mod = new Alg();
 		}
-		if (!reader.read(curFrame)) {
+		if (!reader.read(curFrame))
 			break;
-		}
 		auto initial = getTickCount();
 		mod->process(curFrame);
 		frameCount++;
@@ -67,7 +73,6 @@ void VidCont::initWriter() {
 		if (!writer.isOpened()) {
 			cout << "Err opening " << outVid << ")\n";
 			writer.release();
-			CV_Assert(false);
 		}
 		isWrInit = true;
 	}
@@ -85,7 +90,9 @@ VidCont::~VidCont() {
 	cvDestroyAllWindows();
 }
 
-Size VidCont::getSize(VideoCapture vc) { return Size(int(vc.get(CAP_PROP_FRAME_WIDTH)), int(vc.get(CAP_PROP_FRAME_HEIGHT))); }
+Size VidCont::getSize(VideoCapture vc) {
+	return Size(int(vc.get(CAP_PROP_FRAME_WIDTH)), int(vc.get(CAP_PROP_FRAME_HEIGHT)));
+}
 
 void VidCont::setSize(VideoCapture reader, Size reqSize) {
 	reader.set(CAP_PROP_FRAME_WIDTH, reqSize.width);

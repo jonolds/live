@@ -26,9 +26,9 @@ Mat Alg::process(Mat inFrame) {
 	vector<Vec4i> testVec;
 	
 	adaptiveThreshold(blur2, blur2, 255, ADAPTIVE_THRESH_MEAN_C, THRESH_BINARY_INV, 21, 4.5);
-	show(blur2, 1, "thresh");
+//	show(blur2, 1, "thresh");
 	HoughLinesP(blur2, testVec, 1, CV_PI/180, 10, 0, 50);
-	cout << testVec.size() << "\n";
+	//cout << testVec.size() << "\n";
 	for(Vec4i v : testVec)
 		line(inSmall, Point(v[0], v[1]), Point(v[2], v[3]), white, 1, 8);
 	
@@ -43,9 +43,9 @@ Mat Alg::process(Mat inFrame) {
 
 
 //	blurImg = superBlur(grayImg.clone());				//2 blurImg
-	show(inSmall, 1, "inSmall");
+//	show(inSmall, 1, "inSmall");
 //	show(blurImg, 1, "blurImg");
-	show(blur2, 1, "blur2");
+//	show(blur2, 1, "blur2");
 	blurImg = blur2;
 
 
