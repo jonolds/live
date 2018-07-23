@@ -1,10 +1,10 @@
-#ifndef T7VEC_H
-#define T7VEC_H
+#ifndef SECTOR_H
+#define SECTOR_H
 #include <opencv2/core.hpp>
 #include <vector>
 #include "t7.h"
 #include "Alg.h"
-#include "colors.h"
+#include "constants.h"
 
 
 class Sector {

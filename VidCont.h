@@ -7,8 +7,15 @@
 
 class VidCont {
 public:
-	int totalFrames, currentFrame;
-	
+	void drawDots(cv::Mat&);
+	Pt l1 = Pt(172, 67), l2 = Pt(142, 90), l3 = Pt(0, 202), l4 = Pt(0, 0), r1 = Pt(260, 69), r2 = Pt(294, 93), r3 = Pt(448, 214), r4 = Pt(0, 0);
+
+	cv::Mat camMat, distCoef;
+	void loadCamData();
+
+	int totalFrames, framePos = 0, sliderNumber = 0;
+	double freq;
+	cv::Mat inFrame, outFrame;
 	cv::VideoCapture reader;
 	cv::VideoWriter writer;
 	Alg* mod;
@@ -16,10 +23,8 @@ public:
 	std::string outVid, outWin = "out";
 	bool isVidOpen = false, isWrInit = false;
 	//VidCont member functions
-	VidCont(std::string inVidPath = "", std::string outVidPath = "");
+	VidCont(const std::string& inVidPath = "", std::string outVidPath = "");
 	~VidCont();
-	void initWriter(), endAll(), run(), setSize(cv::VideoCapture reader, cv::Size reqSize);
-	cv::Size getSize(cv::VideoCapture vc);
-	void on_frame(int, void*);
+	void initWriter(), endAll(), run();
 };
 #endif
