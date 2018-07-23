@@ -5,6 +5,8 @@
 using namespace std;
 using namespace cv;
 
+#define PI 3.1415926
+
 void on_frame(int num, void* data) {
 	VideoCapture vc = *(static_cast<VideoCapture*>(data));
 	vc.set(propPos, num);
@@ -46,6 +48,7 @@ void onMouse(int evt, int x, int y, int flags, void* param) {
 		cout << x << "\n" << y << "\n";
 	}
 }
+
 
 void VidCont::run() {
 	createTrackbar("Position", "control", &framePos, totalFrames);
