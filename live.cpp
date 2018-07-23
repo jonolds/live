@@ -2,118 +2,99 @@
 #include "VidCont.h"
 #include <string>
 #include <opencv2/aruco.hpp>
+#include <opencv2/highgui.hpp>
+
+
 
 using namespace std;
 using namespace cv;
 void makeWindows();
+int main2(), main3();
 
 int main() {
-	int framePos = 0;
-	double PI = 3.1415926;
-	namedWindow("Result", 1);
-	VideoCapture cap;
-	
+	main3();
+	return 0;
+}
 
-	bool camInput = false;
-	
-	//Cam input
-	if(camInput) {
-		cap.open(700);
-	}
-	else {
-		cap.open("../media/test24.mp4");
-		int totalFrames = (int)cap.get(CAP_PROP_FRAME_COUNT);
-		createTrackbar("Position", "Result", &framePos, totalFrames);
-	}
+int alph_ = 90, bet_ = 90, gam_ = 90, f_ = 500, dist_ = 500;
+Mat destination;
 
+void resetVars() {
+	alph_ = 90, bet_ = 90, gam_ = 90, f_ = 500, dist_ = 500;
+}
 
-	// mat container to receive images
-	Mat source, destination;
-
-	// check if capture was successful
-	if (!cap.isOpened()) { cout << "cap not open"; return 1; }
-
-
-	int alpha_ = 90, beta_ = 90, gamma_ = 90;
-	int f_ = 500, dist_ = 500;
-
-	
-	
-	createTrackbar("Alpha", "Result", &alpha_, 180);
-	createTrackbar("Beta", "Result", &beta_, 180);
-	createTrackbar("Gamma", "Result", &gamma_, 180);
+void addTrackBars() {
+	createTrackbar("Alpha", "Result", &alph_, 180);
+	createTrackbar("Beta", "Result", &bet_, 180);
+	createTrackbar("Gamma", "Result", &gam_, 180);
 	createTrackbar("f", "Result", &f_, 2000);
 	createTrackbar("Distance", "Result", &dist_, 2000);
+}
+
+Mat getTransMatrix(Size origSz) {
+	double PI = 3.1415926;
+
+	double alph = ((double)alph_ - 90) * PI / 180, bet = ((double)bet_ - 90) * PI / 180;
+	double gam = ((double)gam_ - 90) * PI / 180, focalLen = (double)f_, dist = (double)dist_;
+
+	double w = (double)origSz.width, h = (double)origSz.height;
+	Mat RX = (Mat_<float>(4, 4) << 1, 0, 0, 0, 0, cos(alph), -sin(alph), 0, 0, sin(alph), cos(alph), 0, 0, 0, 0, 1);
+	Mat RY = (Mat_<float>(4, 4) << cos(bet), 0, -sin(bet), 0, 0, 1, 0, 0, sin(bet), 0, cos(bet), 0, 0, 0, 0, 1);
+	Mat RZ = (Mat_<float>(4, 4) << cos(gam), -sin(gam), 0, 0, sin(gam), cos(gam), 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
+	
+	Mat A1 = (Mat_<float>(4, 3) << 1, 0, -w / 2, 0, 1, -h / 2, 0, 0, 0, 0, 0, 1);
+	Mat R = RX * RY * RZ;
+	Mat T = (Mat_<float>(4, 4) << 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, dist, 0, 0, 0, 1);
+	Mat K = (Mat_<float>(3, 4) << focalLen, 0, w / 2, 0, 0, focalLen, h / 2, 0, 0, 0, 1, 0);
+	return Mat(K * (T * (R * A1)));
+}
+
+int main3() {
+	//Declare variables
+	bool camInput = false;
+	VideoCapture cap;
+	Mat source;
+	int framePos = 0; // totalFrames = 0;
+	Size origSz = Size(1280, 720), resizedSz = Size(640, 360);
+	
+	namedWindow("Result", 1);
+
+	//Cam input 
+	if(camInput) {
+		cap.open(700);
+		if (!cap.isOpened()) { cout << "cap not open"; return 1; }
+		cap.set(CAP_PROP_FRAME_WIDTH, origSz.width);
+		cap.set(CAP_PROP_FRAME_HEIGHT, origSz.height);
+		cap.read(source);
+	}
+	else {
+		cap.open("../media/tape.mp4");
+		if (!cap.isOpened()) { cout << "vid not open"; return 1; }
+		cap.read(source);
+		framePos -= 1;
+		createTrackbar("Position", "Result", &framePos, (int)cap.get(CAP_PROP_FRAME_COUNT)-1);
+	}
+	addTrackBars();
+	
+	resize(source, destination, resizedSz);
+	imshow("Result", destination);
+	waitKey(10);
 
 	while (true) {
-		if(!camInput)
-			cap.set(CAP_PROP_POS_FRAMES, framePos);
+		cap.set(CAP_PROP_POS_FRAMES, framePos);
 		cap.read(source);
-		//resize(source, source, Size(640, 360));
 
-		double alpha = ((double)alpha_ - 90) * PI / 180;
-		double beta = ((double)beta_ - 90) * PI / 180;
-		double gamma = ((double)gamma_ - 90) * PI / 180;
-		double focalLength = (double)f_;
-		double dist = (double)dist_;
+		warpPerspective(source, destination, getTransMatrix(origSz), origSz, INTER_CUBIC | WARP_INVERSE_MAP);
 
-		Size image_size = source.size();
-		double w = (double)image_size.width, h = (double)image_size.height;
-
-
-		// Projecion matrix 2D -> 3D
-		Mat A1 = (Mat_<float>(4, 3) <<
-			1, 0, -w / 2,
-			0, 1, -h / 2,
-			0, 0, 0,
-			0, 0, 1);
-
-
-		// Rotation matrices Rx, Ry, Rz
-
-		Mat RX = (Mat_<float>(4, 4) <<
-			1, 0, 0, 0,
-			0, cos(alpha), -sin(alpha), 0,
-			0, sin(alpha), cos(alpha), 0,
-			0, 0, 0, 1);
-
-		Mat RY = (Mat_<float>(4, 4) <<
-			cos(beta), 0, -sin(beta), 0,
-			0, 1, 0, 0,
-			sin(beta), 0, cos(beta), 0,
-			0, 0, 0, 1);
-
-		Mat RZ = (Mat_<float>(4, 4) <<
-			cos(gamma), -sin(gamma), 0, 0,
-			sin(gamma), cos(gamma), 0, 0,
-			0, 0, 1, 0,
-			0, 0, 0, 1);
-
-
-		// R - rotation matrix
-		Mat R = RX * RY * RZ;
-
-		// T - translation matrix
-		Mat T = (Mat_<float>(4, 4) <<
-			1, 0, 0, 0,
-			0, 1, 0, 0,
-			0, 0, 1, dist,
-			0, 0, 0, 1);
-
-		// K - intrinsic matrix 
-		Mat K = (Mat_<float>(3, 4) <<
-			focalLength, 0, w / 2, 0,
-			0, focalLength, h / 2, 0,
-			0, 0, 1, 0
-			);
-
-
-		Mat transformationMat = K * (T * (R * A1));
-
-		warpPerspective(source, destination, transformationMat, image_size, INTER_CUBIC | WARP_INVERSE_MAP);
-
+		resize(destination, destination, resizedSz);
 		imshow("Result", destination);
-		if(waitKey(100) == 27) break;
+		char ch = waitKey(10);
+		if (ch == 27) 
+			break;
+		if (ch == 99)
+			resetVars();
+
+		
 	}
 	return 0;
 }

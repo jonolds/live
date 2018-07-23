@@ -5,8 +5,6 @@
 using namespace std;
 using namespace cv;
 
-#define PI 3.1415926
-
 void on_frame(int num, void* data) {
 	VideoCapture vc = *(static_cast<VideoCapture*>(data));
 	vc.set(propPos, num);
@@ -18,16 +16,16 @@ void on_frame(int num, void* data) {
 
 VidCont::VidCont(const string& inVidPath, string outVidPath) {
 	outVid = outVidPath;							//Save out video path
-	freq = 1000*getTickFrequency();
+	freq = 1000 * getTickFrequency();
 	loadCamData();
 	reader.release();								//Release reader in case it exists
-	
+
 	if (!inVidPath.empty()) {						//open file if one was defined
-		reader.open(inVidPath);	
+		reader.open(inVidPath);
 		if (!reader.isOpened()) { cout << "Bad file read\n"; reader.release(); }
 		totalFrames = (int)reader.get(propCount);
 	}
-	
+
 	else {											//open camera if no file defined
 		reader.release();
 		reader.open(700);
@@ -37,7 +35,7 @@ VidCont::VidCont(const string& inVidPath, string outVidPath) {
 		reader.set(propFps, fps);
 	}
 	isVidOpen = true;
-//	initWriter();
+	//	initWriter();
 }
 
 void onMouse(int evt, int x, int y, int flags, void* param) {
@@ -48,7 +46,6 @@ void onMouse(int evt, int x, int y, int flags, void* param) {
 		cout << x << "\n" << y << "\n";
 	}
 }
-
 
 void VidCont::run() {
 	createTrackbar("Position", "control", &framePos, totalFrames);
@@ -83,55 +80,56 @@ void VidCont::run() {
 	Point2f src_vertices[6] = { Pt(133, 63), Pt(281, 63), Pt(380, 108), Pt(45, 108) };
 	//Point2f dst_vertices[6] = { Pt(0,0), Pt(448, 0), Pt(448, 252), Pt(0, 252) };
 	Point2f dst_vertices[6] = { Pt(0,0), Pt(448, 0), Pt(448, 108), Pt(0, 108) };
-	Mat pTrans = getPerspectiveTransform(src_vertices, dst_vertices); 
+	Mat pTrans = getPerspectiveTransform(src_vertices, dst_vertices);
 	while (true) {
-		
 
-		reader.set(propPos, framePos);
+
+		//reader.set(propPos, framePos);
 		reader.read(inFrame);
 
 		undistort(inFrame, outFrame, camMat, distCoef);
-		
-		resize(inFrame, inFrame, Size(0, 0), .35, .35);
-		resize(outFrame, outFrame, Size(0, 0), .35, .35);
+
+		resize(inFrame, inFrame, Size(0, 0), .5, .5);
+		resize(outFrame, outFrame, Size(0, 0), .5, .5);
 		//warpPerspective(inFrame, outFrame, pTrans, outFrame.size());
 		//Mat outFrame = mod->process2(inFrame.clone());
 
-		
-		
+
+
 		imshow("outFrame", outFrame);
 		imshow("inFrame", inFrame);
-		if(waitKey(1) == 27)
+		if (waitKey(100) == 27)
 			break;
 
-	//	undistort(inFrame, outFrame, camMat, distCoef);
-	//	transform(inFrame.clone());
+		//	undistort(inFrame, outFrame, camMat, distCoef);
+		//	transform(inFrame.clone());
 
-	//	drawDots(inFrame);
+		//	drawDots(inFrame);
 	}
+	cout << "test\n";
 }
 
-	//while(true) {
-		//if (framePos == totalFrames){		//loop at last frame
-		//	framePos = 0;
-		//	reader.set(propPos, 0);
-		//	delete mod;						//reset Mod if looping
-		//	mod = new Alg();
-		//}
-		//
-		//if (!reader.read(inFrame))			//read next frame
-		//	break;
-		//framePos++;
-		//auto initial = getTickCount();		//get current time
-		//mod->process(inFrame);				//process frame
-		//if (!outVid.empty())				//write output if out path set
-		//	writer.write(outFrame);
-		//
-		//double elapsed = (getTickCount() - initial) / (freq);	//get elapsed in milliseconds
-		//int remaining = int(double(1000 / fps) - elapsed);
-		
-		//imshow(outWin, outFrame); (remaining > 1) ? waitKey(remaining) : waitKey(1);
-	//}
+//while(true) {
+//if (framePos == totalFrames){		//loop at last frame
+//	framePos = 0;
+//	reader.set(propPos, 0);
+//	delete mod;						//reset Mod if looping
+//	mod = new Alg();
+//}
+//
+//if (!reader.read(inFrame))			//read next frame
+//	break;
+//framePos++;
+//auto initial = getTickCount();		//get current time
+//mod->process(inFrame);				//process frame
+//if (!outVid.empty())				//write output if out path set
+//	writer.write(outFrame);
+//
+//double elapsed = (getTickCount() - initial) / (freq);	//get elapsed in milliseconds
+//int remaining = int(double(1000 / fps) - elapsed);
+
+//imshow(outWin, outFrame); (remaining > 1) ? waitKey(remaining) : waitKey(1);
+//}
 //}
 
 void VidCont::loadCamData() {
