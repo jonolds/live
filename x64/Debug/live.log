@@ -1,2 +1,10 @@
-﻿  VidCont.cpp
+﻿  Alg.cpp
+  basics.cpp
+  draw.cpp
+  helper.cpp
+  live.cpp
+  Sector.cpp
+  t7.cpp
+  VidCont.cpp
+  Generating Code...
   live.vcxproj -> C:\stuff\robots\x64\Debug\live.exe

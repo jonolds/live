@@ -4,23 +4,20 @@
 #include <opencv2/aruco.hpp>
 #include <opencv2/highgui.hpp>
 
-
-
 using namespace std;
 using namespace cv;
-void makeWindows();
-int main2(), main3();
-
-int main() {
-	main3();
-	return 0;
-}
 
 int alph_ = 90, bet_ = 90, gam_ = 90, f_ = 500, dist_ = 500;
 Mat destination;
 
-void resetVars() {
-	alph_ = 90, bet_ = 90, gam_ = 90, f_ = 500, dist_ = 500;
+void makeWindows();
+int main2(), main3();
+void resetVars(int state, void* ptr);
+string buttonReset = "Reset";
+
+int main() {
+	main3();
+	return 0;
 }
 
 void addTrackBars() {
@@ -29,6 +26,12 @@ void addTrackBars() {
 	createTrackbar("Gamma", "Result", &gam_, 180);
 	createTrackbar("f", "Result", &f_, 2000);
 	createTrackbar("Distance", "Result", &dist_, 2000);
+	createButton(buttonReset, resetVars, nullptr, QT_PUSH_BUTTON, false);
+}
+
+void resetVars(int state, void* ptr) {
+	if(state == 1)
+		alph_ = 90, bet_ = 90, gam_ = 90, f_ = 500, dist_ = 500;
 }
 
 Mat getTransMatrix(Size origSz) {
@@ -51,7 +54,7 @@ Mat getTransMatrix(Size origSz) {
 
 int main3() {
 	//Declare variables
-	bool camInput = false;
+	bool camInput = true;
 	VideoCapture cap;
 	Mat source;
 	int framePos = 0; // totalFrames = 0;
@@ -91,10 +94,6 @@ int main3() {
 		char ch = waitKey(10);
 		if (ch == 27) 
 			break;
-		if (ch == 99)
-			resetVars();
-
-		
 	}
 	return 0;
 }
